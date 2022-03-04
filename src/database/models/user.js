@@ -18,6 +18,11 @@ module.exports = (sequelize, DataTypes) => {
             isEmail: true,
           },
         },
+        accountType: {
+          type: DataTypes.ENUM,
+          values: ['individual', 'business'],
+          allowNull: false,
+        },
         gender: {
           type: DataTypes.ENUM,
           values: ['male', 'female'],

@@ -20,6 +20,8 @@ export const validateUserSignup = async (user) => {
         'the field must not be empty and it must be more than 2 letters'),
     email: Joi.string().email().required()
         .label('Please enter a valid email address'),
+    accountType: Joi.string().valid('individual', 'business')
+        .label('please input the account type (individual or business)'),
     gender: Joi.string().valid('male', 'female')
         .label('please input a gender (male or female)'),
     phoneNumber: Joi.string().regex(/^[0-9+\(\)#\.\s\/ext-]+$/)

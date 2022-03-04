@@ -20,8 +20,14 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
+      accountType: {
+        type: Sequelize.ENUM,
+        values: ['individual', 'business'],
+        allowNull: false,
+      },
       gender: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM,
+        values: ['male', 'female'],
         allowNull: true,
       },
       phoneNumber: {
