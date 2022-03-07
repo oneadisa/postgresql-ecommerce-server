@@ -6,9 +6,8 @@ import ApiError from '../utils/apiError';
  * Validates user paramenters upon registration
  *
  * @param {object} user The user object
- * @param {object} res The user response object
- * @return {object} returns an object (error or response).
-*/
+ * @return {boolean} returns true/false.
+ */
 export const validateUserSignup = async (user) => {
   // Joi parameters to test against user inputs
   const schema = Joi.object({
@@ -33,10 +32,28 @@ export const validateUserSignup = async (user) => {
     repeatPassword: Joi.ref('password'),
   })
       .with('password', 'repeatPassword');
-  // Once user inputs are validated, move into server
-  const {error} = await schema.validate(user);
+  const {error} = await schema.validateAsync(user);
   if (error) {
     throw new ApiError(400, error.message);
   }
+  return true;
+};
+
+/**
+ * Validates user paramenters upon profile request
+ *
+ * @param {number} id The id of the user's profile
+ * @return {boolean} returns true/false.
+ */
+export const validateProfileRequest = async (id) => {
+  const schema = Joi.object({
+    id: Joi.number().required(),
+  });
+
+  const {error} = await schema.validateAsync(schema);
+  if (error) {
+    throw new ApiError(400, error.message);
+  }
+
   return true;
 };

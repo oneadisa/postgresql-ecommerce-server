@@ -1,16 +1,16 @@
 module.exports = (sequelize, DataTypes) => {
-  const User = sequelize.define(
-      'User',
+  const Business = sequelize.define(
+      'Business',
       {
-        firstName: {
+        businessName: {
           type: DataTypes.STRING,
           allowNull: false,
         },
-        lastName: {
+        natureOfBusiness: {
           type: DataTypes.STRING,
           allowNull: false,
         },
-        email: {
+        businessEmail: {
           type: DataTypes.STRING,
           allowNull: false,
           unique: true,
@@ -18,36 +18,35 @@ module.exports = (sequelize, DataTypes) => {
             isEmail: true,
           },
         },
-        accountType: {
-          type: DataTypes.ENUM,
-          values: ['individual', 'business'],
+        businessAddress: {
+          type: DataTypes.STRING,
           allowNull: false,
         },
-        gender: {
+        businessType: {
           type: DataTypes.ENUM,
-          values: ['male', 'female'],
-          allowNull: true,
+          values: ['LLC', 'sole proprietorship', 'unregistered'],
+          allowNull: false,
         },
-        phoneNumber: {
+        cacCertURL: {
           type: DataTypes.STRING,
           allowNull: true,
+          validate: {
+            isUrl: true,
+          },
         },
-        password: {
-          type: DataTypes.STRING,
+        userId: {
+          type: DataTypes.INTEGER,
           allowNull: false,
         },
       },
   );
-  User.associate = (models) => {
-    User.hasOne(models.Business, {
+  Business.associate = (models) => {
+    Business.belongsTo(models.User, {
       foreignKey: {
         name: 'userId',
       },
-      onDelete: 'SET NULL',
-      onUpdate: 'CASCADE',
     });
   };
 
-  return User;
+  return Business;
 };
-
