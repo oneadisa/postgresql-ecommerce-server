@@ -84,3 +84,56 @@ export const errorResponse = (res,
     },
   });
 };
+
+/**
+ *  Generates token upon first signup to be used by subesquent users
+ * @static
+ * @param {string} letterIdentifier - one letter identifier of establishment.
+ * @param {number} id - one letter identifier of establishment
+ * @memberof Helpers
+ * @return {string} JWT token.
+ */
+export const generateTokenOnSignup =(letterIdentifier, id) => {
+  const randomNumber = Math.floor(Math.random() * 8999 + 1000);
+  const anotherRandomNumber = Math.floor(Math.random() * 8999 + 1000);
+  const token =
+   `${letterIdentifier}.${id}.${randomNumber}@${anotherRandomNumber}`;
+  return token;
+};
+
+/**
+   *
+   *  Synchronously verify the given JWT token using a secret
+   * @static
+   * @param {*} token - JWT token.
+   * @return {string | number | Buffer | object } - Decoded JWT payload if
+   * token is valid or an error message if otherwise.
+   * @memberof Helpers
+   */
+export const verifyToken = (token) => {
+  try {
+    return jwt.verify(token, SECRET);
+  } catch (err) {
+    throw new Error('Invalid Token');
+  }
+};
+
+/**
+   * Generates email verification link
+   * @static
+   * @param { Request } req - Request object
+   * @param { object } options - Contains user's data to be signed within Token.
+   * @param { string } options.id - User's unique ID.
+   * @param { string } options.email - User's email.
+   * @param { string } options.role - User's role.
+   * @memberof Helpers
+   * @return {URL} - Verification link.
+   */
+export const generateVerificationLink = (req, {id, email, role}) =>{
+  const token = Helpers.generateToken({id, email, role});
+  const host = req.hostname === 'localhost' ? `${req.hostname}:${PORT}` :
+  req.hostname;
+  return `${req.protocol}://${host}/api/auth/verify?token=${token}`;
+};
+
+

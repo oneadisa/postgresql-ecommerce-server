@@ -18,6 +18,7 @@ export const createUser = async (user) => {
   return newUser.dataValues;
 };
 
+
 /**
  *
  * updates an existing user by ID

@@ -57,3 +57,47 @@ export const validateProfileRequest = async (id) => {
 
   return true;
 };
+
+/**
+   * Validates user paramenters upon login
+   *
+   * @param {object} userObject - The user object
+   * @param {object} res - The user response object
+   * @return {object} - returns an object (error or response).
+   */
+export const userLogin = (userObject) =>{
+  // joi parameters to test against user inputs
+  const schema = {
+    email: joi.string().email().required()
+        .label('Please enter a valid company email address'),
+    password: new PasswordComplexity(complexityOptions).required()
+        .label('Password is not provided or its invalid'),
+  };
+  // Once user inputs are validated, move into server
+  const {error} = joi.validate({...userObject}, schema);
+  if (error) {
+    throw error;
+  }
+  return true;
+};
+
+/**
+ *  Dummy callback function for validation tests
+ * Use this function as a placeholder for controllers
+ * during testing of validations whenever the controller
+ * being validated for is not yet implemented
+ *
+ * e.g: @ route:-
+ * userRouter.post('/auth/signup', userValidation.signup, userValidation.dummy);
+ * @param {object} req request from endpoint
+ * @param {object} res - response of method
+ */
+export const dummy =(req, res) =>{
+  try {
+    // outdated response values, dummy parameter used for testing only
+    successResponse(res, 'Success', 200);
+  } catch (error) {
+    const status = error.status || 500;
+    errorResponse(res, {code: status, message: error.message});
+  }
+};
