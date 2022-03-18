@@ -90,3 +90,23 @@ export const authenticate = (req, res, next) => {
     errorResponse(res, {code: 401, message: err.message});
   }
 };
+
+/**
+  * Middleware method for authentication
+  * @param {object} req - The request from the endpoint.
+  * @param {object} res - The response returned by the method.
+  * @param {object} next - the returned values going into the next operation.
+  */
+export const isAuthenticatedUser = async (req, res, next) => {
+  const {token} = req.cookies;
+
+  if (!token) {
+    return next(new ErrorHander('Please Login to access this resource', 401));
+  }
+
+  const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+
+  req.user = await User.findById(decodedData.id);
+
+  next();
+};
