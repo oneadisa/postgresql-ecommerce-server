@@ -1,12 +1,12 @@
 // import Joi from '@hapi/joi';
 // import passwordComplexity from 'joi-password-complexity';
-//
+
 // export const passwordResetEmailSchema = Joi.object().keys({
 //   email: Joi.string()
-//   .email()
-//   .required(),
+//       .email()
+//       .required(),
 // });
-//
+
 // const complexityOPtions = {
 //   min: 8,
 //   max: 250,
@@ -18,18 +18,18 @@
 // };
 
 // export const changePasswordSchema = Joi.object().keys({
-//   eslint-disable-next-line new-cap
-//   password: new passwordComplexity(complexityOPtions)
-//   .required(),
+//   password: new asswordComplexity(complexityOPtions)
+//       .required(),
 //   confirmPassword: Joi.string()
-//   .valid(Joi.ref('password'))
-//   .required()
-//   .options({
-// stripUnknown: true,
-// language: {
-//   any: {
-// allowOnly: 'do not match with password!',
-//   },
-// },
-//   }),
+//       .valid(Joi.ref('password'))
+//       .required()
+//       .options(
+//           {
+//             //  stripUnknown: true
+//             // language: {
+//             // any: {
+//           // allowOnly: 'do not match with password!',
+//             // }
+//             // }
+//           }),
 // });

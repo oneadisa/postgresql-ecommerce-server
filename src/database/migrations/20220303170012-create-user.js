@@ -19,6 +19,9 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
+        validate: {
+          isEmail: true,
+        },
       },
       accountType: {
         type: Sequelize.ENUM,
@@ -37,6 +40,45 @@ module.exports = {
       password: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      avatar: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+      'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
+        validate: {
+          isUrl: true,
+        },
+      },
+      meansOfID: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      IDpic: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+          'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
+        validate: {
+          isUrl: true,
+        },
+      },
+      bankCode: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      bankAccountName: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      bankAccountNumber: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      walletBalance: {
+        type: Sequelize.DOUBLE,
+        allowNull: false,
+        defaultValue: 0,
       },
       createdAt: {
         allowNull: false,

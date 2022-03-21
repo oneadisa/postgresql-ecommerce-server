@@ -1,7 +1,8 @@
-import {errorResponse} from '../utils/helpers';
+import {errorResponse, checkToken, verifyToken} from '../utils/helpers';
 import {findUserBy} from '../services';
-import {validateUserSignup} from '../validation';
-
+import {validateUserSignup, userLogin} from '../validation';
+import jwt from 'jsonwebtoken';
+import ApiError from '../utils/apiError';
 /**
  * Middleware method for user validation during signup/registration
  * @param {Response} req The request from the endpoint.
@@ -50,12 +51,32 @@ export const onUserLogin=async (req, res, next)=> {
 
 
 /**
-  * Middleware method for user authentication
+  * Middleware method for authentication
   * @param {object} req - The request from the endpoint.
   * @param {object} res - The response returned by the method.
   * @param {object} next - the returned values going into the next operation.
   */
-export const isAuthenticated=(req, res, next)=> {
+export const authenticate = async (req, res, next) => {
+  try {
+    const {token} = req.cookies;
+    if (!token) return;
+    errorResponse(res, {code: 401, message: 'Access denied, Token required'});
+    const decoded = jwt.verify(token, process.env.SECRET);
+    req.user = await findUserBy(decoded.id);
+    next();
+  } catch (err) {
+    errorResponse(res, {code: 401, message: err.message});
+  }
+};
+
+/**
+  * Middleware method for user authentication
+  * @param {object} req - The request from the endpoint.
+  * @param {object} res - The response returned by the method.
+  * @param {object} next - the returned values going into the next operation.
+  * @return {object} - next().
+  */
+export const isAuthenticated= async (req, res, next) =>{
   try {
     const {userId} = req.params;
     const token = checkToken(req);
@@ -71,42 +92,4 @@ export const isAuthenticated=(req, res, next)=> {
     const status = err.status || 500;
     errorResponse(res, {code: status, message: err.message});
   }
-};
-/**
-  * Middleware method for authentication
-  * @param {object} req - The request from the endpoint.
-  * @param {object} res - The response returned by the method.
-  * @param {object} next - the returned values going into the next operation.
-  */
-export const authenticate = (req, res, next) => {
-  try {
-    const token = checkToken(req);
-    if (!token) return;
-    errorResponse(res, {code: 401, message: 'Access denied, Token required'});
-    const decoded = verifyToken(token);
-    req.data = decoded;
-    next();
-  } catch (err) {
-    errorResponse(res, {code: 401, message: err.message});
-  }
-};
-
-/**
-  * Middleware method for authentication
-  * @param {object} req - The request from the endpoint.
-  * @param {object} res - The response returned by the method.
-  * @param {object} next - the returned values going into the next operation.
-  */
-export const isAuthenticatedUser = async (req, res, next) => {
-  const {token} = req.cookies;
-
-  if (!token) {
-    return next(new ErrorHander('Please Login to access this resource', 401));
-  }
-
-  const decodedData = jwt.verify(token, process.env.JWT_SECRET);
-
-  req.user = await User.findById(decodedData.id);
-
-  next();
 };

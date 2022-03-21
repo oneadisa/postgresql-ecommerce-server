@@ -34,10 +34,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    pic: {
+    avatar: {
       type: DataTypes.STRING,
       allowNull: false,
-      default:
+      defaultValue:
         'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
       validate: {
         isUrl: true,
@@ -50,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
     IDpic: {
       type: DataTypes.STRING,
       allowNull: false,
-      default:
+      defaultValue:
         'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
       validate: {
         isUrl: true,
@@ -71,7 +71,7 @@ module.exports = (sequelize, DataTypes) => {
     walletBalance: {
       type: DataTypes.DOUBLE,
       allowNull: false,
-      default: 0,
+      defaultValue: 0,
     },
   });
   User.associate = (models) => {
@@ -82,34 +82,34 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE',
     });
-    User.hasMany(models.Campaign, {
-      foreignKey: {
-        name: 'userId',
-      },
-      onDelete: 'SET NULL',
-      onUpdate: 'CASCADE',
-    });
-    User.hasMany(models.Product, {
-      foreignKey: {
-        name: 'userId',
-      },
-      onDelete: 'SET NULL',
-      onUpdate: 'CASCADE',
-    });
-    User.hasMany(models.Order, {
-      foreignKey: {
-        name: 'userId',
-      },
-      onDelete: 'SET NULL',
-      onUpdate: 'CASCADE',
-    });
-    User.hasMany(models.Images, {
-      foreignKey: {
-        name: 'userId',
-      },
-      onDelete: 'SET NULL',
-      onUpdate: 'CASCADE',
-    });
+    // User.hasMany(models.Campaign, {
+    // foreignKey: {
+    // name: 'userId',
+    // },
+    // onDelete: 'SET NULL',
+    // onUpdate: 'CASCADE',
+    // });
+    // User.hasMany(models.Product, {
+    // foreignKey: {
+    // name: 'userId',
+    // },
+    // onDelete: 'SET NULL',
+    // onUpdate: 'CASCADE',
+    // });
+    // User.hasMany(models.Order, {
+    // foreignKey: {
+    // name: 'userId',
+    // },
+    // onDelete: 'SET NULL',
+    // onUpdate: 'CASCADE',
+    // });
+    // User.hasMany(models.Images, {
+    // foreignKey: {
+    // name: 'userId',
+    // },
+    // onDelete: 'SET NULL',
+    // onUpdate: 'CASCADE',
+    // });
   };
 
   return User;

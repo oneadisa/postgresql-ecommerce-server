@@ -44,6 +44,7 @@ export const findUserBy = async (options) => {
   return await User.findOne({where: options});
 };
 
+
 /**
  * Update user password in the database
  *

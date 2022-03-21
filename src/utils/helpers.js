@@ -1,5 +1,11 @@
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+// import Joi from '@hapi/joi';
+import bcrypt from 'bcryptjs';
+import env from '../config/env-config';
+// import ApiError from './apiError';
+
+const {SECRET, PORT} = env;
+
 
 /**
  * Hashes a password
@@ -32,7 +38,7 @@ export const comparePassword = async (password, hash) => {
  * @return {string} JWT token.
  */
 export const generateToken = (payLoad, expiresIn = '1d') => {
-  return jwt.sign(payLoad, process.env.SECRET, {expiresIn});
+  return jwt.sign(payLoad, ''+ process.env.SECRET, {expiresIn});
 };
 
 /**
@@ -87,7 +93,6 @@ export const errorResponse = (res,
 
 /**
  *  Generates token upon first signup to be used by subesquent users
- * @static
  * @param {string} letterIdentifier - one letter identifier of establishment.
  * @param {number} id - one letter identifier of establishment
  * @memberof Helpers
@@ -102,9 +107,28 @@ export const generateTokenOnSignup =(letterIdentifier, id) => {
 };
 
 /**
+* Checks token from request header for user authentication
+* @param {object} req - The request from the endpoint
+* @memberof Helpers
+* @return {Token} Token
+*/
+export const checkToken= async (req) => {
+  const {
+    headers: {authorization},
+    cookies: {token: cookieToken},
+  } = req;
+  let bearerToken = null;
+  if (authorization) {
+    bearerToken = authorization.split(' ')[1] ?
+      authorization.split(' ')[1] : authorization;
+  }
+  return cookieToken || bearerToken || req.headers['x-access-token'] ||
+   req.headers.token || req.body.token;
+};
+
+/**
    *
    *  Synchronously verify the given JWT token using a secret
-   * @static
    * @param {*} token - JWT token.
    * @return {string | number | Buffer | object } - Decoded JWT payload if
    * token is valid or an error message if otherwise.
@@ -137,3 +161,31 @@ export const generateVerificationLink = (req, {id, email, role}) =>{
 };
 
 
+/**
+* Extracts a new user object from the one supplied
+* @param {object} user - The user data from which a new user
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractUserData = (user) => {
+  return {
+    id: user.id,
+    token: user.token,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    accountType: user.accountType,
+    gender: user.gender,
+    phoneNumber: user.phoneNumber,
+    avatar: user.avatar,
+    meansOfID: user.meansOfID,
+    IDpic: user.IDpic,
+    bankCode: user.bankCode,
+    bankAccountName: user.bankAccountName,
+    bankAccountNumber: user.bankAccountNumber,
+    walletBalance: user.walletBalance,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+};

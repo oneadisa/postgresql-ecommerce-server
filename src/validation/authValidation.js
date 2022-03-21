@@ -69,7 +69,7 @@ export const userLogin = (userObject) =>{
   // joi parameters to test against user inputs
   const schema = {
     email: joi.string().email().required()
-        .label('Please enter a valid company email address'),
+        .label('Please enter a valid email address'),
     password: new PasswordComplexity(complexityOptions).required()
         .label('Password is not provided or its invalid'),
   };

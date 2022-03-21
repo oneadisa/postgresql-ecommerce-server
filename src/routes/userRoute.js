@@ -1,18 +1,16 @@
 import {Router as expressRouter} from 'express';
 import {
-  getSingleUser, getAllUsers,
+  getAllUsers, updateProfile, userProfile,
 } from '../controllers';
-import {isAuthenticatedUser} from '../middlewares';
+import {isAuthenticated} from '../middlewares';
 
 
 const router = expressRouter();
 
 router
     .route('/all')
-    .get(isAuthenticatedUser, getAllUsers);
+    .get(getAllUsers);
 
-router
-    .route('/user/:id')
-    .get(isAuthenticatedUser, getSingleUser);
-
+router.get('/profile/:userId', userProfile);
+router.put('/profile/:userId', isAuthenticated, updateProfile);
 export default router;
