@@ -140,22 +140,29 @@ export const verifyPasswordResetLink = (req, res) => {
  * @memberof Auth
  */
 export const verifyEmail= async (req, res) =>{
-  try {
-    const {token} = req.cookies;
-    const decoded = verifyToken(token);
-    const user = await updateById({isVerified: true}, decoded.id);
-    const userResponse = extractUserData(user);
-    successResponse(res, {...userResponse});
-  } catch (e) {
-    if (e.message === 'Invalid Token') {
-      return errorResponse(res,
-          {code: 400, message: 'Invalid token, verification unsuccessful'});
+  let token;
+  if (
+    req.headers.authorization &&
+  req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      // decodes token id
+      const decoded = jwt.verify(token, ''+process.env.SECRET);
+      const user = await updateById({isVerified: true}, decoded.id);
+      const userResponse = extractUserData(user);
+      successResponse(res, {...userResponse});
+    } catch (e) {
+      if (e.message === 'Invalid Token') {
+        return errorResponse(res,
+            {code: 400, message: 'Invalid token, verification unsuccessful'});
+      }
+      if (e.message === 'Not Found') {
+        return errorResponse(res, {code: 400, message:
+      'No user found to verify'});
+      }
+      errorResponse(res, {});
     }
-    if (e.message === 'Not Found') {
-      return errorResponse(res, {code: 400, message:
-        'No user found to verify'});
-    }
-    errorResponse(res, {});
   }
 };
 
@@ -219,7 +226,7 @@ export const logout = async (req, res) =>{
  * @param {Response} next - The response returned by the method.
  * @memberof Auth
  */
-export const getUserDetails = async (req, res, next) => {
+export const getMyDetails = async (req, res, next) => {
   try {
     const user = await findUserBy({id: req.user.id});
     if (!user) {

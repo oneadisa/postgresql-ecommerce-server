@@ -171,11 +171,13 @@ export const generateVerificationLink = (req, {id, email, role}) =>{
 export const extractUserData = (user) => {
   return {
     id: user.id,
+    isVerified: user.isVerified,
     token: user.token,
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
     accountType: user.accountType,
+    role: user.role,
     gender: user.gender,
     phoneNumber: user.phoneNumber,
     avatar: user.avatar,

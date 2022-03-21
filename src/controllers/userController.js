@@ -52,7 +52,7 @@ export const userProfile = async (req, res) => {
 };
 
 /**
- * Updates a user profile.
+ * Updates a user profile (admin)
  *
 
  * @param {Request} req - The request from the endpoint.
@@ -71,3 +71,22 @@ export const updateProfile= async (req, res) => {
   }
 };
 
+/**
+ * Updates a user profile.
+ *
+
+ * @param {Request} req - The request from the endpoint.
+ * @param {Response} res - The response returned by the method.
+ * @return { JSON } A JSON response with the new user's profile update.
+ * @memberof UserController
+ */
+export const updateMyProfile= async (req, res) => {
+  try {
+    const id = req.user.id;
+    const user = await updateAny(req.body, {id});
+    const userResponse = extractUserData(user);
+    successResponse(res, userResponse, 200);
+  } catch (error) {
+    errorResponse(res, {code: error.statusCode, message: error.message});
+  }
+};

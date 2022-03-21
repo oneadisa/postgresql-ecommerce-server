@@ -2,9 +2,8 @@ import {Router as expressRouter} from 'express';
 import {getUserProfile, userSignup,
   verifyEmail, sendResetPasswordEmail, resetPassword,
   verifyPasswordResetLink, loginUser, logout,
-  getUserDetails,
 } from '../controllers';
-import {onUserSignup, authenticate} from '../middlewares';
+import {onUserSignup} from '../middlewares';
 
 const router = expressRouter();
 
@@ -12,7 +11,6 @@ router.post('/user/signup', onUserSignup, userSignup);
 router.get('/user/:userId/profile', getUserProfile);
 router.post('/login', loginUser);
 router.get('/logout', logout);
-router.route('/me').get(authenticate, getUserDetails);
 
 
 router.get('/verify', verifyEmail);

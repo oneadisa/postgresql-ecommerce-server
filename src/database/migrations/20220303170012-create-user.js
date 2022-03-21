@@ -41,6 +41,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      isVerified: {
+        type: Sequelize.BOOLEAN,
+        allowNull: true,
+        defaultValue: false,
+      },
       avatar: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -50,6 +55,10 @@ module.exports = {
           isUrl: true,
         },
       },
+      role: {type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+          'user'},
       meansOfID: {
         type: Sequelize.STRING,
         allowNull: true,

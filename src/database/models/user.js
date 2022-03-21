@@ -34,6 +34,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
     avatar: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -43,6 +48,10 @@ module.exports = (sequelize, DataTypes) => {
         isUrl: true,
       },
     },
+    role: {type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue:
+        'user'},
     meansOfID: {
       type: DataTypes.STRING,
       allowNull: true,
