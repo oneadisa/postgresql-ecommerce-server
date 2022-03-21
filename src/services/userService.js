@@ -100,3 +100,15 @@ export const getProfile = async (userId) => {
 
   return user.dataValues;
 };
+
+
+/**
+ * Deletes a user record from the database.
+ * @param {number} userId - id of user to be deleted from the database.
+ * @return {Promise<object>} - A promise object which resolves
+ * to the newly created user.
+ * @memberof UserService
+ */
+export const deleteUserById= (userId) => {
+  return User.destroy({where: {id: userId}});
+};
