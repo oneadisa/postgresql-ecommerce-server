@@ -50,17 +50,28 @@ export const findBusinessBy = async (options) => {
 /**
  * Function for update query
  *
- * @param {object} obj An object of the keys to be
- * @param {object} newValues Object of fields to be updated
+*@param {object} newValues Object of fields to be updated
+*@param {object} obj An object of the keys to be
  * searched e.g {id}, {businessEmail}
  * @memberof BusinessService
  * @return {Promise<Business>} A promise object with business detail.
  */
-export const updateBusinessBy = async (obj, newValues) => {
+export const updateBusinessBy = async (newValues, obj) => {
   const business = await findBusinessBy(obj);
   if (!business) {
     throw new ApiError(404, `Business with ${obj} does not exist`);
   }
 
   return await business.update(newValues);
+};
+
+/**
+ * Deletes a business record from the database.
+ * @param {number} businessId - id of business to be deleted from the database.
+ * @return {Promise<object>} - A promise object which resolves
+ * to the newly created business.
+ * @memberof BusinessService
+ */
+export const deleteBusinessById= (businessId) => {
+  return Business.destroy({where: {id: businessId}});
 };

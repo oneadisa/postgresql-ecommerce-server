@@ -154,7 +154,7 @@ export const verifyToken = (token) => {
    * @return {URL} - Verification link.
    */
 export const generateVerificationLink = (req, {id, email, role}) =>{
-  const token = Helpers.generateToken({id, email, role});
+  const token = generateToken({id, email, role});
   const host = req.hostname === 'localhost' ? `${req.hostname}:${PORT}` :
   req.hostname;
   return `${req.protocol}://${host}/api/auth/verify?token=${token}`;
@@ -189,5 +189,26 @@ export const extractUserData = (user) => {
     walletBalance: user.walletBalance,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+  };
+};
+
+/**
+* Extracts a new business object from the one supplied
+* @param {object} business - The user data from which a new business
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractBusinessData = (business) => {
+  return {
+    id: business.id,
+    businessName: business.businessName,
+    natureOfBusiness: business.natureOfBusiness,
+    businessAddress: business.businessAddress,
+    businessType: business.businessType,
+    cacCertURL: business.cacCertURL,
+    userId: business.userId,
+    createdAt: business.createdAt,
+    updatedAt: business.updatedAt,
   };
 };

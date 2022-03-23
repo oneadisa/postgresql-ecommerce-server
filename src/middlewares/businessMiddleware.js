@@ -41,3 +41,10 @@ export const onBusinessCreation = async (req, res, next) => {
     });
   }
 };
+
+// else if (!user) {
+// errorResponse(res, {
+// code: 404,
+// message: `User with id: ${userId} does not exist`,
+// });
+// }

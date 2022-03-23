@@ -4,6 +4,10 @@ import {generateToken, successResponse, errorResponse,
 import {createUser, getProfile, findUserBy, updateById, updatePassword}
   from '../services';
 import ApiError from '../utils/apiError';
+import {
+  sendVerificationEmail, sendResetMail,
+} from '../utils/mailer';
+
 /**
  * Registers a new user.
  *
@@ -21,8 +25,8 @@ export const userSignup = async (req, res) => {
     // user = extractUserData(user);
     const {token} = user;
     res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
-
-    successResponse(res, {...user}, 201);
+    const isSent = await sendVerificationEmail(req, {...user});
+    successResponse(res, {...user, emailSent: isSent}, 201);
   } catch (error) {
     errorResponse(res, {
       message: error.message,
