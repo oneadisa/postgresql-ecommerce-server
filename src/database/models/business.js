@@ -46,6 +46,13 @@ module.exports = (sequelize, DataTypes) => {
         name: 'userId',
       },
     });
+    Business.hasOne(models.Store, {
+      foreignKey: {
+        name: 'businessId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
   };
 
   return Business;

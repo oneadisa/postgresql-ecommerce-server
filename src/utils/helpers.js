@@ -235,3 +235,29 @@ export const extractStoreData = (store) => {
     updatedAt: store.updatedAt,
   };
 };
+
+/**
+* Extracts a new product object from the one supplied
+* @param {object} product - The user data from which a new product
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractProductData = (product) =>{
+  return {
+    productTitle: product.productTitle,
+    shortDescription: product. shortDescription,
+    productDetails: product. productDetails,
+    discountedPrice: product. discountedPrice,
+    price: product. price,
+    productUnitCount: product. productUnitCount,
+    deliveryPrice: product.deliveryPrice,
+    numberOfReviews: product. numberOfReviews,
+    ratings: product.ratings,
+    category: product. category,
+    storeId: product. storeId,
+    userId: product.userId,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+  };
+};

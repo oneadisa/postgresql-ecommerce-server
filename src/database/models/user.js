@@ -105,13 +105,13 @@ module.exports = (sequelize, DataTypes) => {
     // onDelete: 'SET NULL',
     // onUpdate: 'CASCADE',
     // });
-    // User.hasMany(models.Product, {
-    // foreignKey: {
-    // name: 'userId',
-    // },
-    // onDelete: 'SET NULL',
-    // onUpdate: 'CASCADE',
-    // });
+    User.hasMany(models.Product, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
     // User.hasMany(models.Order, {
     // foreignKey: {
     // name: 'userId',

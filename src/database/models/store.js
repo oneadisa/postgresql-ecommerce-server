@@ -58,13 +58,13 @@ module.exports = (sequelize, DataTypes) => {
         name: 'userId',
       },
     });
-    // Store.hasMany(models.Product, {
-    //   foreignKey: {
-    // name: 'storeId',
-    //   },
-    //   onDelete: 'SET NULL',
-    //   onUpdate: 'CASCADE',
-    // });
+    Store.hasMany(models.Product, {
+      foreignKey: {
+        name: 'storeId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
   };
 
   return Store;
