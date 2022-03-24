@@ -40,12 +40,32 @@ export const getAllBusinesses = async (req, res, next) => {
  * @memberof BusinnessController
  * @return {JSON} A JSON response with the created Business's details.
  */
+// export const addBusiness = async (req, res) => {
+// try {
+// const {businessName, natureOfBusiness, businessEmail,
+// businessAddress, businessType, cacCertURL} = req.body;
+// const businessDetails = {
+// businessName,
+// natureOfBusiness,
+// businessEmail,
+// businessAddress,
+// businessType,
+// cacCertURL,
+// userId: req.user.id,
+// };
+// const newBusiness = await createBusiness(businessDetails);
+// successResponse(res, {...newBusiness}, 201);
+// } catch (error) {
+// errorResponse(res, {
+// message: error.message,
+// });
+// }
+// };
+
 export const addBusiness = async (req, res) => {
   try {
     const {body} = req;
     const business = await createBusiness(body);
-    // const id = business.id;
-    // const newBusiness = await updateBusinessBy({userId: req.user.id}, {id});
     successResponse(res, {...business}, 201);
   } catch (error) {
     errorResponse(res, {

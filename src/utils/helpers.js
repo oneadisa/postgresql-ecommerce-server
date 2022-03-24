@@ -212,3 +212,26 @@ export const extractBusinessData = (business) => {
     updatedAt: business.updatedAt,
   };
 };
+
+/**
+* Extracts a new store object from the one supplied
+* @param {object} store - The user data from which a new store
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractStoreData = (store) => {
+  return {
+    storeName: store.storeName,
+    storeTagline: store.storeTagline,
+    storeDescription: store.storeDescription,
+    storeLink: store.storeLink,
+    category: store.category,
+    storeLogo: store.storeLogo,
+    storeBackground: store.storeBackground,
+    businessId: store.businessId,
+    userId: store.userId,
+    createdAt: store.createdAt,
+    updatedAt: store.updatedAt,
+  };
+};

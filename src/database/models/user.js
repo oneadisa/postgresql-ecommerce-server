@@ -91,6 +91,13 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE',
     });
+    User.hasOne(models.Store, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
     // User.hasMany(models.Campaign, {
     // foreignKey: {
     // name: 'userId',
