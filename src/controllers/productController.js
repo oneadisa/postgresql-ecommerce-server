@@ -3,7 +3,7 @@ import {successResponse, errorResponse,
 import {findStoreBy} from '../services';
 
 import {createProduct, findProductBy, updateProductBy,
-  fetchAllProducts, deleteProduct} from '../services';
+  fetchAllProducts, deleteProduct, findProductsBy} from '../services';
 
 
 /**
@@ -105,7 +105,7 @@ export const getProductDetails = async (req, res) => {
 };
 
 /**
-   * Get products that belong to a particular product.
+   * Get a particular product.
    *
    * @static
    * @param {Request} req - The request from the browser.
@@ -113,7 +113,7 @@ export const getProductDetails = async (req, res) => {
    * @return { JSON } A JSON response with the newly created booking.
    * @memberof ProductController
    */
-export const getProductProducts = async (req, res) => {
+export const getProduct = async (req, res) => {
   try {
     const id = req.params.id;
     const product = await findProductBy({id});
@@ -193,18 +193,18 @@ export const deleteProductAction = async (req, res) => {
       * @return { JSON } A JSON response containing with an empty data object.
       * @memberof ProductController
       */
-export const deleteMyProductAccount = async (req, res) => {
-  try {
-    const product = await findProductBy({userId: req.user.id});
-    const productId = product.id;
-    const rowDeleted = await deleteProduct(productId);
-    if (!rowDeleted) return errorResponse(res, {});
-    successResponse(res, {code: 200, message:
-           'Account Deleted Successfully.'}, 200);
-  } catch (err) {
-    errorResponse(res, {});
-  }
-};
+// export const deleteMyProductAccount = async (req, res) => {
+//   try {
+// const product = await findProductBy({userId: req.user.id});
+// const productId = product.id;
+// const rowDeleted = await deleteProduct(productId);
+// if (!rowDeleted) return errorResponse(res, {});
+// successResponse(res, {code: 200, message:
+//    'Account Deleted Successfully.'}, 200);
+//   } catch (err) {
+// errorResponse(res, {});
+//   }
+// };
 
 /**
      *
@@ -217,17 +217,16 @@ export const deleteMyProductAccount = async (req, res) => {
      */
 export const getMyProductDetails = async (req, res, next) => {
   try {
-    const product = await findProductBy({userId: req.user.id});
-    if (!product) {
+    const products = await findProductsBy({userId: req.user.id});
+    if (!products) {
       return errorResponse(res, {code: 401, message:
             'This user exists or is logged out. Please login or sign up.'});
     }
-    // user.token =
-    // generateToken({email: user.email});
-    const response = extractProductData(product);
-    // const {token} = loginResponse;
-    // res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
-    successResponse(res, {...response});
+    res.status(200).json({
+      success: true,
+      products,
+    });
+    successResponse(res, {...products}, 201);
   } catch (error) {
     errorResponse(res, {});
   }

@@ -3,3 +3,4 @@ export * from './businessMiddleware';
 export * from './passwordMiddleware';
 export * from './storeMiddleware';
 export * from './productMiddleware';
+export * from './productReviewMiddleware';

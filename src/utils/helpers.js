@@ -261,3 +261,25 @@ export const extractProductData = (product) =>{
     updatedAt: product.updatedAt,
   };
 };
+
+
+/**
+* Extracts a new product Review object from the one supplied
+* @param {object} productReview - The user data from which a new product Review
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractProductReviewData = (productReview) =>{
+  return {
+    comment: productReview.comment,
+    firstName: productReview.firstName,
+    lastName: productReview.lastName,
+    businessName: productReview.businessName,
+    rating: productReview.rating,
+    productId: productReview. productId,
+    userId: productReview.userId,
+    createdAt: productReview.createdAt,
+    updatedAt: productReview.updatedAt,
+  };
+};

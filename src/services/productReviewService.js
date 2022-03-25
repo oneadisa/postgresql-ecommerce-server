@@ -4,58 +4,58 @@ import {findUserBy} from './';
 import db from '../database/models';
 import ApiError from '../utils/apiError';
 
-const {Product} = db;
+const {ProductReview} = db;
 
 /**
- * Creates a new Product.
+ * Creates a new Product Review.
  *
- * @param {object} productInfo - The product to be saved in the database.
- * @memberof ProductService
+ * @param {object} productReviewInfo - The product to be saved in the database.
+ * @memberof ProductReviewService
  * @return {Promise<object>} A promise object with user detail.
  */
-export const createProduct = async (productInfo) => {
-  const user = findUserBy({id: productInfo.userId});
+export const createProductReview = async (productReviewInfo) => {
+  const user = findUserBy({id: productReviewInfo.userId});
   if (!user) throw new ApiError(404, `User with id: ${id} does not exist`);
-  const newProduct = await Product.create(productInfo);
+  const newProductReview = await ProductReview.create(productReviewInfo);
 
-  return newProduct.dataValues;
+  return newProductReview.dataValues;
 };
 
 /**
- * Find a product
- * @param {number | object | string} options - Product search value
+ * Find a product review
+ * @param {number | object | string} options - ProductReview search value
  * @return {Promise<object>} A promise object with user detail.
- * @memberof ProductService
+ * @memberof ProductReviewService
  */
-export const findProductBy = async (options) => {
-  return Product.findOne({where: options});
+export const findProductReviewBy = async (options) => {
+  return ProductReview.findOne({where: options});
 };
 
 /**
- * Find all products matching the query
- * @param {number | object | string} options - Product search value
+ * Find all product reviews given a query
+ * @param {number | object | string} options - ProductReview search value
  * @return {Promise<object>} A promise object with user detail.
- * @memberof ProductService
+ * @memberof ProductReviewService
  */
-export const findProductsBy = async (options) => {
-  return Product.findAll({where: options});
+export const findProductReviewsBy = async (options) => {
+  return ProductReview.findAll({where: options});
 };
 
 /**
    *
-   * updates an existing Product by ID
+   * updates an existing ProductReview by ID
    * @static
-   * @param {object} ProductData user properties to be updated
+   * @param {object} ProductReviewData user properties to be updated
     * @param {string} id user id
    * @return {Promise<object | null | string> } an object containing the updated
    * properties of the user is returned on success
    * or a null value if update fails, and an error message if a user is not
    *  found
-   * @memberof ProductService
+   * @memberof ProductReviewService
    */
-export const updateProductById = async (ProductData, id) => {
-  const [rowaffected, [product]] = await Product.update(
-      ProductData,
+export const updateProductReviewById = async (ProductReviewData, id) => {
+  const [rowaffected, [product]] = await ProductReview.update(
+      ProductReviewData,
       {returning: true, where: {id}},
   );
   if (!rowaffected) throw new ApiError('Not Found');
@@ -68,13 +68,13 @@ export const updateProductById = async (ProductData, id) => {
 *@param {object} newValues Object of fields to be updated
 *@param {object} obj An object of the keys to be
  * searched e.g {id}, {productEmail}
- * @memberof ProductService
- * @return {Promise<Product>} A promise object with product detail.
+ * @memberof ProductReviewService
+ * @return {Promise<ProductReview>} A promise object with product detail.
  */
-export const updateProductBy = async (newValues, obj) => {
-  const product = await findProductBy(obj);
+export const updateProductReviewBy = async (newValues, obj) => {
+  const product = await findProductReviewBy(obj);
   if (!product) {
-    throw new ApiError(404, `Product with ${obj} does not exist`);
+    throw new ApiError(404, `ProductReview with ${obj} does not exist`);
   }
 
   return await product.update(newValues);
@@ -84,22 +84,22 @@ export const updateProductBy = async (newValues, obj) => {
   * Fetches a product instance based on it's primary key.
   * @param {integer} productId - Primary key of the product to be fetched.
   * @param {object} options - Additional query information
-  * @return {Promise<array>} - An instance of Product table including
+  * @return {Promise<array>} - An instance of ProductReview table including
   *  it's relationships.
-  * @memberof ProductService
+  * @memberof ProductReviewService
   */
-export const findProductById = async (productId, options = {}) => {
-  return Product.findByPk(productId, options);
+export const findProductReviewById = async (productId, options = {}) => {
+  return ProductReview.findByPk(productId, options);
 };
 
 /**
  * Fetches all products
  * @return {Promise<array>} - An instance of notification
  *  table including it's relationships.
- * @memberof ProductService
+ * @memberof ProductReviewService
  */
-export const fetchAllProducts = async () => {
-  const products = await Product.findAll({});
+export const fetchAllProductReviews = async () => {
+  const products = await ProductReview.findAll({});
   return products;
 };
 
@@ -109,10 +109,10 @@ export const fetchAllProducts = async () => {
     * @param {integer} productId - The product Id.
     * @return {Promise<array>} - An instance of product table including
     *  it's relationships.
-    * @memberof ProductService
+    * @memberof ProductReviewService
 */
-export const deleteProduct = async (productId) => {
-  const deleted = await Product.destroy({
+export const deleteProductReview = async (productId) => {
+  const deleted = await ProductReview.destroy({
     where: {id: productId},
   });
   return deleted;

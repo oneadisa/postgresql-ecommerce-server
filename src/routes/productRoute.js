@@ -2,7 +2,7 @@ import {Router as expressRouter} from 'express';
 import {
   deleteProductAction, updateProductProfile, addProduct,
   getMyProductDetails, getProductDetails, getAllProducts,
-  updateMyProductProfile, deleteMyProductAccount,
+  updateMyProductProfile,
 } from '../controllers';
 import {protect, onProductCreation} from '../middlewares';
 
@@ -17,7 +17,11 @@ router
 
 router.put('/me/update', protect, updateMyProductProfile);
 router.get('/me', protect, getMyProductDetails);
-router.delete('/me/delete', protect, deleteMyProductAccount);
+// router.delete('/me/delete', protect, deleteMyProductAccount);
+
+router.get('/one/profile/:productId', getProductDetails);
+router.put('/one/update/:productId', updateProductProfile);
+router.delete('/one/delete/:productId', protect, deleteProductAction);
 
 router.get('/admin/profile/:productId', getProductDetails);
 router.put('/admin/update/:productId', updateProductProfile);

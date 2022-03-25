@@ -183,7 +183,7 @@ export const loginUser= async (req, res) =>{
     const user = await findUserBy({email});
     if (!user) {
       return errorResponse(res, {code: 401, message:
-         'Please provide a valid email.'});
+         'Please provide a valid email or sign up.'});
     }
     if (!comparePassword(password, user.password)) {
       return errorResponse(res, {code: 401, message: 'Invalid password'});
