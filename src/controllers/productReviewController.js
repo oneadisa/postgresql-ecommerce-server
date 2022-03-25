@@ -34,8 +34,16 @@ export const addProductReview = async (req, res) => {
       productId,
       userId,
     };
-    const productReview = await createProductReview(productReviewInfo);
-    successResponse(res, {...productReview}, 201);
+    const review = await findProductReviewBy({productId, userId});
+    if (review) {
+      const productReview = await updateProductReviewBy(req.body,
+          {productId, userId});
+      const productReviewResponse = extractProductReviewData(productReview);
+      successResponse(res, productReviewResponse, 200);
+    } else {
+      const productReview = await createProductReview(productReviewInfo);
+      successResponse(res, {...productReview}, 201);
+    }
   } catch (error) {
     errorResponse(res, {
       code: error.statusCode,
