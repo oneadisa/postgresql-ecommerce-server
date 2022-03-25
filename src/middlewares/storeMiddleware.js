@@ -13,10 +13,10 @@ export const onStoreCreation = async (req, res, next) => {
   try {
     const validated = await validateStore(req.body);
     if (validated) {
-      const {storeLink, userId, businessId} = req.body;
+      const {storeLink, userId} = req.body;
       const store = await findStoreBy({storeLink});
       const user = await findUserBy({id: userId});
-      const business = await findBusinessBy({id: businessId});
+      const business = await findBusinessBy({userId});
       // const {storeLink}= req.body;
       // const user = await findUserBy({id: req.user.id});
       // const business = await findBusinessBy({userId: req.user.id});
@@ -34,7 +34,8 @@ export const onStoreCreation = async (req, res, next) => {
       } else if (!business) {
         errorResponse(res, {
           code: 404,
-          message: `Business with id: ${businessId} does not exist`,
+          message: `User with id: ${userId} does not yet have a business,
+           please create one to create a store.`,
         });
       } else if (user.accountType !== 'business') {
         errorResponse(res, {

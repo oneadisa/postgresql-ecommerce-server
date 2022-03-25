@@ -1,6 +1,6 @@
 import {successResponse, errorResponse,
   extractStoreData} from '../utils/helpers';
-// import {findBusinessBy} from '../services';
+import {findBusinessBy} from '../services';
 
 import {createStore, findStoreBy, updateStoreBy,
   fetchAllStores, deleteStore} from '../services';
@@ -15,39 +15,39 @@ import {createStore, findStoreBy, updateStoreBy,
  * @return {JSON} A JSON response with the created Store's details.
  */
 export const addStore = async (req, res) => {
-  // try {
-  // const business = await findBusinessBy({userId: req.user.id});
-  // const {storeName, storeTagline, storeDescription,
-  // storeLink, category, storeLogo, storeBackground} = req.body;
-  // const storeDetails = {
-  // storeName,
-  // storeTagline,
-  // storeDescription,
-  // storeLink,
-  // category,
-  // storeLogo,
-  // storeBackground,
-  // businessId: business.id,
-  // userId: req.user.id,
-  // };
-  // const store = await createStore(storeDetails);
-  // successResponse(res, {...store}, 201);
-  // } catch (error) {
-  // errorResponse(res, {
-  // code: error.statusCode,
-  // message: error.message,
-  // });
-  // }
-
   try {
-    const {body} = req;
-    const store = await createStore(body);
+    const {storeName, storeTagline, storeDescription,
+      storeLink, category, storeLogo, storeBackground, userId} = req.body;
+    const business = await findBusinessBy({userId});
+    const storeDetails = {
+      storeName,
+      storeTagline,
+      storeDescription,
+      storeLink,
+      category,
+      storeLogo,
+      storeBackground,
+      businessId: business.id,
+      userId,
+    };
+    const store = await createStore(storeDetails);
     successResponse(res, {...store}, 201);
   } catch (error) {
     errorResponse(res, {
+      code: error.statusCode,
       message: error.message,
     });
   }
+
+  // try {
+  // const {body} = req;
+  // const store = await createStore(body);
+  // successResponse(res, {...store}, 201);
+  // } catch (error) {
+  // errorResponse(res, {
+  // message: error.message,
+  // });
+  // }
 };
 
 /**

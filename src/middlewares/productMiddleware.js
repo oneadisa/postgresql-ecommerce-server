@@ -13,9 +13,9 @@ export const onProductCreation = async (req, res, next) => {
   try {
     const validated = await validateProduct(req.body);
     if (validated) {
-      const {userId, storeId} = req.body;
+      const {userId} = req.body;
       const user = await findUserBy({id: userId});
-      const store = await findStoreBy({id: storeId});
+      const store = await findStoreBy({userId});
       // const {storeLink}= req.body;
       // const user = await findUserBy({id: req.user.id});
       // const store = await findStoreBy({userId: req.user.id});
@@ -28,7 +28,8 @@ export const onProductCreation = async (req, res, next) => {
       } else if (!store) {
         errorResponse(res, {
           code: 404,
-          message: `Store with id: ${storeId} does not exist`,
+          message: `Store does not exist,
+           please create one before you can add a product.`,
         });
       } else if (user.accountType !== 'business') {
         errorResponse(res, {

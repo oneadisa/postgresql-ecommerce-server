@@ -1,6 +1,6 @@
 import {successResponse, errorResponse,
   extractProductData} from '../utils/helpers';
-// import {findBusinessBy} from '../services';
+import {findStoreBy} from '../services';
 
 import {createProduct, findProductBy, updateProductBy,
   fetchAllProducts, deleteProduct} from '../services';
@@ -15,39 +15,47 @@ import {createProduct, findProductBy, updateProductBy,
    * @return {JSON} A JSON response with the created Product's details.
    */
 export const addProduct = async (req, res) => {
-  // try {
-  // const business = await findBusinessBy({userId: req.user.id});
-  // const {productName, productTagline, productDescription,
-  // productLink, category, productLogo, productBackground} = req.body;
-  // const productDetails = {
-  // productName,
-  // productTagline,
-  // productDescription,
-  // productLink,
-  // category,
-  // productLogo,
-  // productBackground,
-  // businessId: business.id,
-  // userId: req.user.id,
-  // };
-  // const product = await createProduct(productDetails);
-  // successResponse(res, {...product}, 201);
-  // } catch (error) {
-  // errorResponse(res, {
-  // code: error.statusCode,
-  // message: error.message,
-  // });
-  // }
-
   try {
-    const {body} = req;
-    const product = await createProduct(body);
+    const {productTitle,
+      shortDescription,
+      productDetails,
+      discountedPrice,
+      price,
+      productUnitCount,
+      deliveryPrice,
+      category,
+      userId} = req.body;
+    const store = await findStoreBy({userId});
+    const productInfo = {
+      productTitle,
+      shortDescription,
+      productDetails,
+      discountedPrice,
+      price,
+      productUnitCount,
+      deliveryPrice,
+      category,
+      storeId: store.id,
+      userId,
+    };
+    const product = await createProduct(productInfo);
     successResponse(res, {...product}, 201);
   } catch (error) {
     errorResponse(res, {
+      code: error.statusCode,
       message: error.message,
     });
   }
+
+//   try {
+  // const {body} = req;
+  // const product = await createProduct(body);
+  // successResponse(res, {...product}, 201);
+//   } catch (error) {
+  // errorResponse(res, {
+  //   message: error.message,
+  // });
+//   }
 };
 
 /**
