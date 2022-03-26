@@ -3,7 +3,7 @@ import {findUserBy, findStoreBy} from '../services';
 import {validateProduct} from '../validation';
 
 /**
- * Middleware method for store validation during store creation
+ * Middleware method for product validation during product creation
  * @param {Response} req The request from the endpoint.
  * @param {Response} res The response returned by the method.
  * @param {object} next the returned values going into the next operation.

@@ -283,3 +283,45 @@ export const extractProductReviewData = (productReview) =>{
     updatedAt: productReview.updatedAt,
   };
 };
+
+/**
+* Extracts a new order object from the one supplied
+* @param {object} order - The user data from which a new product Review
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractOrderData = (order) =>{
+  return {
+    address: order.address,
+    city: order.city,
+    state: order.state,
+    country: order.country,
+    pinCode: order.pinCode,
+    phoneNumber: order.phoneNumber,
+    productName: order.productName,
+    price: order.price,
+    quantity: order.quantity,
+    image: order.image,
+    paymentInfoId: order.paymentInfoId,
+    paymentInfoStatus: order.paymentInfoStatus,
+    paidAt: order.paidAt,
+    itemsPrice: order.itemsPrice,
+    taxPrice: order.taxPrice,
+    deliveryPrice: order.deliveryPrice,
+    totalPrice: order.totalPrice,
+    orderStatus: order.orderStatus,
+    deliveredAt: order.deliveredAt,
+    firstName: order.firstName,
+    lastName: order.lastName,
+    businessName: order.businessName,
+    userId: order.userId,
+    productId: order.productId,
+    owner: order.owner,
+    store: order.store,
+    business: order.business,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+  };
+};
+

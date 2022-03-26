@@ -69,13 +69,13 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE',
     });
-    // Product.hasMany(models.Images, {
-    //   foreignKey: {
-    // name: 'productId',
-    //   },
-    //   onDelete: 'SET NULL',
-    //   onUpdate: 'CASCADE',
-    // });
+    Product.hasMany(models.Order, {
+      foreignKey: {
+        name: 'productId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
   };
 
   return Product;
