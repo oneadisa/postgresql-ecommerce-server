@@ -37,6 +37,17 @@ export const findOrdersBy = async (options) => {
   return Order.findAll({where: options});
 };
 
+
+/**
+ * Find all orders given a query and give count
+ * @param {number | object | string} options - Order search value
+ * @return {Promise<object>} A promise object with user detail.
+ * @memberof OrderService
+ */
+export const findOrdersAndCountBy = async (options) => {
+  return await Order.findAndCountAll({where: options});
+};
+
 /**
    *
    * updates an existing Order by ID

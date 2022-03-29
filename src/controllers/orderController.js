@@ -1,10 +1,10 @@
 import {successResponse, errorResponse,
-  extractOrderData} from '../utils/helpers';
+  extractOrderData, extractProductData} from '../utils/helpers';
 import {findBusinessBy, findUserBy, findStoreBy, findProductBy}
   from '../services';
-
+import ApiError from '../utils/apiError';
 import {createOrder, findOrderBy, findOrdersBy,
-  updateOrderBy,
+  updateOrderBy, updateProductBy,
   fetchAllOrders, deleteOrder} from '../services';
 
 
@@ -214,20 +214,37 @@ export const getOrdersProduct = async (req, res) => {
 
        * @param {Request} req - The request from the endpoint.
        * @param {Response} res - The response returned by the method.
+       * @param {Response} next - The response returned by the method.
        * @return { JSON } A JSON response with the new order's
        *  profile update.
        * @memberof OrderController
        */
-export const updateOrderProfile= async (req, res) => {
+export const updateOrderProfile= async (req, res, next) => {
   try {
     const id = req.params.orderId;
-    const order = await updateOrderBy(req.body, {id});
-    const orderResponse = extractOrderData(order);
-    successResponse(res, orderResponse, 200);
+    const order = await findOrderBy({id});
+    if (!order) {
+      throw new ApiError(404, `Order with id: ${id} does not exist`);
+    } else if (order.orderStatus === 'Delivered') {
+      throw new ApiError(404, `You have already delivered this order.`);
+    } else if (req.body.orderStatus === 'Delivered') {
+      const id = req.params.orderId;
+      const order = await findOrderBy({id});
+      const updatedOrder = await updateOrderBy({orderStatus: 'Delivered',
+        deliveredAt: Date.now()}, {id});
+      const previousProduct = await findProductBy({id: order.productId});
+      const newUnitCount = previousProduct.productUnitCount - order.quantity;
+      const product = await updateProductBy({productUnitCount: newUnitCount},
+          {id: order.productId});
+      const productResponse = extractProductData(product);
+      const orderResponse = extractOrderData(updatedOrder);
+      successResponse(res, orderResponse, productResponse, 200);
+    }
   } catch (error) {
     errorResponse(res, {code: error.statusCode, message: error.message});
   }
 };
+
 
 /**
          * Updates a order profile.

@@ -1,10 +1,15 @@
 import {successResponse, errorResponse,
-  extractProductReviewData} from '../utils/helpers';
-import {findBusinessBy, findUserBy} from '../services';
+  extractProductReviewData,
+  //  extractProductData
+} from '../utils/helpers';
+import {findBusinessBy, findUserBy,
+  // findProductBy
+} from '../services';
 
 import {createProductReview, findProductReviewBy, findProductReviewsBy,
   updateProductReviewBy,
-  fetchAllProductReviews, deleteProductReview} from '../services';
+  fetchAllProductReviews, deleteProductReview,
+  findProrductReviewsRating} from '../services';
 
 
 /**
@@ -36,13 +41,22 @@ export const addProductReview = async (req, res) => {
     };
     const review = await findProductReviewBy({productId, userId});
     if (review) {
-      const productReview = await updateProductReviewBy(req.body,
-          {productId, userId});
-      const productReviewResponse = extractProductReviewData(productReview);
-      successResponse(res, productReviewResponse, 200);
+      // const productReview = await updateProductReviewBy(req.body,
+      // {productId, userId});
+      // const productReviewResponse = extractProductReviewData(productReview);
+      // successResponse(res, productReviewResponse, 200);
     } else {
       const productReview = await createProductReview(productReviewInfo);
-      successResponse(res, {...productReview}, 201);
+      // const previousProduct = await findProductBy({id: productId});
+      // const newReviewCount = previousProduct.numberOfReviews + 1;
+      const reviews = await findProrductReviewsRating({id: productId});
+      // const newRating = reviews.rating + rating;
+      // const product = await updateProductBy({numberOfReviews: newReviewCount,
+      // ratings: newRating},
+      // {id: productId});
+      // const productResponse = extractProductData(product);
+      successResponse(res, {...productReview}, productResponse, 201);
+      console.log(reviews);
     }
   } catch (error) {
     errorResponse(res, {

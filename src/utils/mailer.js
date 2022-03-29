@@ -1,9 +1,7 @@
 import sendgrid from '@sendgrid/mail';
-import env from '../config/env-config';
 import {generateVerificationLink} from './helpers';
 
-const {ADMIN_EMAIL, SENDGRID_KEY} = env;
-sendgrid.setApiKey(SENDGRID_KEY);
+sendgrid.setApiKey(process.env.SENDGRID_KEY);
 
 
 /**
@@ -26,7 +24,7 @@ export const sendVerificationEmail= async (req, {
   });
   const mail = {
     to: email,
-    from: ADMIN_EMAIL,
+    from: process.env.ADMIN_EMAIL,
     templateId: 'd-a1922b184048430088fd7d0bf446cd06',
     dynamic_template_data: {
       'name': firstName,
@@ -62,7 +60,7 @@ export const sendWelcomeEmail = async (req, {
   });
   const mail = {
     to: email,
-    from: ADMIN_EMAIL,
+    from: process.env.ADMIN_EMAIL,
     templateId: 'd-e43cfadaf90a4fa6aa2b3ba8c6a2889b',
     dynamic_template_data: {
       'name': firstName,
@@ -92,7 +90,7 @@ export const sendWelcomeEmail = async (req, {
 export const sendResetMail= async ({email, firstName, resetPasswordLink}) => {
   const mail = {
     to: email,
-    from: ADMIN_EMAIL,
+    from: process.env.ADMIN_EMAIL,
     templateId: 'd-dd8d3babd4b842b28e3ebf03cfdc4c90',
     dynamic_template_data: {
       firstName,

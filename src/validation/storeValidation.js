@@ -11,9 +11,9 @@ import ApiError from '../utils/apiError';
 export const validateStore = async (store) => {
   // Joi parameters to test against user inputs
   const schema = Joi.object({
-    storeName: Joi.string().alphanum().required()
+    storeName: Joi.string().required()
         .label('Please enter a name for your store.'),
-    storeTagline: Joi.string().alphanum().required()
+    storeTagline: Joi.string().required()
         .label('Please provide a tagline for your store.'),
     storeDescription: Joi.string().required()
         .label('Please provide a brief description of your store.'),

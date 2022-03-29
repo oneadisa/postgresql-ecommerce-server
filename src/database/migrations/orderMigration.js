@@ -102,7 +102,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-      owner: {type: Sequelize.INTEGER,
+      ownerId: {type: Sequelize.INTEGER,
         allowNull: true},
       owner: {type: Sequelize.STRING,
         allowNull: true},

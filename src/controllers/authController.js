@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import {generateToken, successResponse, errorResponse,
   comparePassword, extractUserData, verifyToken}
   from '../utils/helpers';
@@ -28,8 +29,9 @@ export const userSignup = async (req, res) => {
     const isSent = await sendVerificationEmail(req, {...user});
     successResponse(res, {...user, emailSent: isSent}, 201);
   } catch (error) {
-    errorResponse(res, {
+    return errorResponse(res, {
       message: error.message,
+      code: error.code,
     });
   }
 };
@@ -75,18 +77,18 @@ export const sendResetPasswordEmail= async (req, res) => {
     }
     const {firstName, id} = user;
     const token = generateToken({firstName, id, email}, '24h');
-    const url = `${req.protocol}://${req.get('host')}/api/auth/reset-password?token=${token}`;
+    const url = `http(s)://gaged.io/password/update?token=${token}`;
     const response = await sendResetMail({
       email, firstName, resetPasswordLink: url,
     });
-    if (response === true) {
-      successResponse(res, 'Password reset link sent successfully', 200);
-    } else {
+    if (!response) {
       throw new ApiError(404, response);
     }
+
+    // eslint-disable-next-line max-len
+    return successResponse(res, {message: 'Password reset link sent successfully'}, 200);
   } catch (err) {
-    const status = err.status || 500;
-    errorResponse(res, {code: status, message: err.message});
+    return errorResponse(res, {code: err.status, message: err.message});
   }
 };
 /**
@@ -97,19 +99,19 @@ export const sendResetPasswordEmail= async (req, res) => {
  * @return {JSON} A JSON response with the registered user and a JWT.
  * @memberof Auth
  */
-export const resetPassword= async (req, res) =>{
+export const resetPassword = async (req, res) => {
   try {
-    const {password} = req.body;
-    const {email} = req.params;
+    const {password, email} = req.body;
+    const {token} = req.params;
     const [updatedPassword] = await updatePassword(password, email);
-    if (updatedPassword === 1) {
-      successResponse(res, 'Password has been changed successfully', 200);
-    } else {
+    const verifiedToken = verifyToken(token);
+    if (!updatedPassword || !verifiedToken) {
       throw new ApiError(404, 'User account does not exist');
     }
+
+    return successResponse(res, {message: 'Password has been changed successfully'}, 200);
   } catch (err) {
-    const status = err.status || 500;
-    errorResponse(res, {code: status, message: err.message});
+    return errorResponse(res, {code: err.status, message: err.message});
   }
 };
 /**
@@ -155,7 +157,7 @@ export const verifyEmail= async (req, res) =>{
       const decoded = jwt.verify(token, ''+process.env.SECRET);
       const user = await updateById({isVerified: true}, decoded.id);
       const userResponse = extractUserData(user);
-      successResponse(res, {...userResponse});
+      return successResponse(res, {...userResponse}, 200);
     } catch (e) {
       if (e.message === 'Invalid Token') {
         return errorResponse(res,
@@ -165,7 +167,7 @@ export const verifyEmail= async (req, res) =>{
         return errorResponse(res, {code: 400, message:
       'No user found to verify'});
       }
-      errorResponse(res, {});
+      return errorResponse(res, {message: e.message, code: e.status});
     }
   }
 };
@@ -182,11 +184,11 @@ export const loginUser= async (req, res) =>{
     const {email, password} = req.body;
     const user = await findUserBy({email});
     if (!user) {
-      return errorResponse(res, {code: 401, message:
-         'Please provide a valid email or sign up.'});
+      throw new ApiError(401, 'Password and email combination is invalid');
     }
+
     if (!comparePassword(password, user.password)) {
-      return errorResponse(res, {code: 401, message: 'Invalid password'});
+      throw new ApiError(401, 'Password and email combination is invalid');
     }
     user.token =
     generateToken({email: user.email});
@@ -195,7 +197,7 @@ export const loginUser= async (req, res) =>{
     res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
     successResponse(res, {...loginResponse});
   } catch (error) {
-    errorResponse(res, {});
+    errorResponse(res, {code: error.status, message: error.message});
   }
 };
 /**
@@ -213,10 +215,10 @@ export const logout = async (req, res) =>{
       expires: new Date(Date.now()),
       httpOnly: true,
     });
-    return successResponse(res,
-        {code: 200, message: 'You have been successfully logged out'});
+    // eslint-disable-next-line max-len
+    return successResponse(res, {message: 'You have been successfully logged out'}, 200);
   } catch (error) {
-    errorResponse(res, {message: error.message});
+    return errorResponse(res, {message: error.message, code: error.status});
   }
 };
 

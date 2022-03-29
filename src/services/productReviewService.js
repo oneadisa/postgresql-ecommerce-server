@@ -3,7 +3,7 @@
 import {findUserBy} from './';
 import db from '../database/models';
 import ApiError from '../utils/apiError';
-
+// const { Op } = require('@sequelize/core');
 const {ProductReview} = db;
 
 /**
@@ -39,6 +39,23 @@ export const findProductReviewBy = async (options) => {
  */
 export const findProductReviewsBy = async (options) => {
   return ProductReview.findAll({where: options});
+};
+
+/**
+ * Find all product reviews given a query
+ * @param {number | object | string} options - ProductReview search value
+ * @return {Promise<object>} A promise object with user detail.
+ * @memberof ProductReviewService
+ */
+export const findProrductReviewsRating = async (options) => {
+  await ProductReview.findAll({where: options,
+    attributes: [
+      [sequelize.fn('average', sequelize.col('rating')), 'total_ratings'],
+    ],
+  });
+
+  // eslint-disable-next-line max-len
+  // findAll({where: options}, {attributes: [[sequelize.fn('SUM', sequelize.col('rating')), 'ratings']]});
 };
 
 /**

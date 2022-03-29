@@ -1,10 +1,5 @@
 import jwt from 'jsonwebtoken';
-// import Joi from '@hapi/joi';
 import bcrypt from 'bcryptjs';
-import env from '../config/env-config';
-// import ApiError from './apiError';
-
-const {SECRET, PORT} = env;
 
 
 /**
@@ -136,7 +131,7 @@ export const checkToken= async (req) => {
    */
 export const verifyToken = (token) => {
   try {
-    return jwt.verify(token, SECRET);
+    return jwt.verify(token, process.env.SECRET);
   } catch (err) {
     throw new Error('Invalid Token');
   }
@@ -155,7 +150,8 @@ export const verifyToken = (token) => {
    */
 export const generateVerificationLink = (req, {id, email, role}) =>{
   const token = generateToken({id, email, role});
-  const host = req.hostname === 'localhost' ? `${req.hostname}:${PORT}` :
+  // eslint-disable-next-line max-len
+  const host = req.hostname === 'localhost' ? `${req.hostname}:${process.env.PORT}` :
   req.hostname;
   return `${req.protocol}://${host}/api/auth/verify?token=${token}`;
 };
@@ -325,3 +321,58 @@ export const extractOrderData = (order) =>{
   };
 };
 
+/**
+* Extracts a new campaign object from the one supplied
+* @param {object} campaign - The user data from which a new product Review
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractCampaignData = (campaign) =>{
+  return {
+    campaignName: campaign.campaignName,
+    natureOfBusiness: campaign.natureOfBusiness,
+    campaignCategory: campaign.campaignCategory,
+    businessAddressCountry: campaign.businessAddressCountry,
+    businessAddressCity: campaign.businessAddressCity,
+    businessAddressOffice: campaign.businessAddressOffice,
+    phoneNumber: campaign.phoneNumber,
+    investorBrief: campaign.investorBrief,
+    campaignVideo: campaign.campaignVideo,
+    pitchDeck: campaign.pitchDeck,
+    idealTargetAudienceAge: campaign.idealTargetAudienceAge,
+    idealTargetAudienceHealthIssuesOrDisabilities:
+     campaign.idealTargetAudienceHealthIssuesOrDisabilities,
+    gender: campaign.gender,
+    ownerLogo: campaign.ownerLogo,
+    fundingType: campaign.fundingType,
+    categoryFunding: campaign.categoryFunding,
+    amountBeingRaised: campaign.amountBeingRaised,
+    amountAlreadyRaised: campaign.amountAlreadyRaised,
+    amountRepaid: campaign.amountRepaid,
+    amountToBeRepaid: campaign.amountToBeRepaid,
+    amountToBeRepaidPerPayout: campaign.amountToBeRepaidPerPayout,
+    pledgedProfitToLenders: campaign.pledgedProfitToLenders,
+    durationPledgedProfit: campaign.durationPledgedProfit,
+    repaymentSchedulePledgedProfit: campaign.repaymentSchedulePledgedProfit,
+    endDatePledgedProfit: campaign.endDatePledgedProfit,
+    endDatePledgedProfitStrin: campaign.endDatePledgedProfitString,
+    timePerPayment: campaign.timePerPayment,
+    equityOfferingPercentage: campaign.equityOfferingPercentage,
+    bankCode: campaign.bankCode,
+    bankAccountName: campaign.bankAccountName,
+    bankAccountNumber: campaign.bankAccountNumber,
+    duration: campaign.duration,
+    goLiveSchedule: campaign.goLiveSchedule,
+    familiarWithCrowdFunding: campaign.familiarWithCrowdFunding,
+    storeOnGaged: campaign.storeOnGaged,
+    endDate: campaign.endDate,
+    firstPaymentDate: campaign.firstPaymentDate,
+    firstPaymentDateString: campaign.firstPaymentDateString,
+    endDateString: campaign.endDateString,
+    business: campaign.business,
+    userId: campaign.userId,
+    createdAt: campaign.createdAt,
+    updatedAt: campaign.updatedAt,
+  };
+};
