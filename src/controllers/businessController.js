@@ -62,18 +62,6 @@ export const addBusiness = async (req, res) => {
   }
 };
 
-// export const addBusiness = async (req, res) => {
-// try {
-// const {body} = req;
-// const business = await createBusiness(body);
-// successResponse(res, {...business}, 201);
-// } catch (error) {
-// errorResponse(res, {
-// message: error.message,
-// });
-// }
-// };
-
 
 /**
   * Gets a business profile after registeration or sign-in.

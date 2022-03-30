@@ -225,3 +225,29 @@ export const getMyStoreDetails = async (req, res, next) => {
   }
 };
 
+/**
+   *
+   *  Get profile details
+   * @static
+   * @param {Request} req - The request from the endpoint.
+   * @param {Response} res - The response returned by the method.
+   * @param {Response} next - The response returned by the method.
+   * @memberof Auth
+   */
+export const getStoreDetailsUser = async (req, res, next) => {
+  try {
+    const store = await findStoreBy({userId: req.params.userId});
+    if (!store) {
+      return errorResponse(res, {code: 401, message:
+          'This user exists or is logged out. Please login or sign up.'});
+    }
+    // user.token =
+    // generateToken({email: user.email});
+    const response = extractStoreData(store);
+    // const {token} = loginResponse;
+    // res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
+    successResponse(res, {...response});
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};

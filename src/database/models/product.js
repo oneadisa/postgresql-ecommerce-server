@@ -76,6 +76,13 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE',
     });
+    Product.hasMany(models.ProductImage, {
+      foreignKey: {
+        name: 'productId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
   };
 
   return Product;

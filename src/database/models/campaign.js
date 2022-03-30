@@ -206,13 +206,20 @@ module.exports = (sequelize, DataTypes) => {
         name: 'userId',
       },
     });
-    // Campaign.hasMany(models.Donation, {
-    // foreignKey: {
-    // name: 'campaignId',
-    // },
-    // onDelete: 'SET NULL',
-    // onUpdate: 'CASCADE',
-    // });
+    Campaign.hasMany(models.Donation, {
+      foreignKey: {
+        name: 'campaignId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
+    Campaign.hasMany(models.CampaignReview, {
+      foreignKey: {
+        name: 'campaignId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
   };
 
   return Campaign;

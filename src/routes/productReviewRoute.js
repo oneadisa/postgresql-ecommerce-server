@@ -2,7 +2,7 @@ import {Router as expressRouter} from 'express';
 import {
   deleteProductReviewAction, updateProductReviewProfile, addProductReview,
   getMyProductReviewDetails, getProductReviewDetails, getAllProductReviews,
-  getProductReviewsProduct} from '../controllers';
+  getProductReviewsProduct, getProductReviewDetailsUser} from '../controllers';
 import {protect, onProductReviewCreation} from '../middlewares';
 
 
@@ -14,9 +14,8 @@ router
     .route('/create')
     .post(protect, onProductReviewCreation, addProductReview);
 
-// router.put('/me/update', protect, updateMyProductReviewProfile);
 router.get('/me', protect, getMyProductReviewDetails);
-// router.delete('/me/delete', protect, deleteMyProductReviewAccount);
+router.get('/me/profile/:userId', protect, getProductReviewDetailsUser);
 
 router.get('/one/review/:productReviewId', getProductReviewDetails);
 router.put('/one/update/:productReviewId', updateProductReviewProfile);

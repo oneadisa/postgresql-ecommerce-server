@@ -119,6 +119,20 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE',
     });
+    User.hasMany(models.CampaignReview, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
+    User.hasMany(models.Donation, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
     User.hasMany(models.Order, {
       foreignKey: {
         name: 'userId',
@@ -126,13 +140,13 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE',
     });
-    // User.hasMany(models.Images, {
-    // foreignKey: {
-    // name: 'userId',
-    // },
-    // onDelete: 'SET NULL',
-    // onUpdate: 'CASCADE',
-    // });
+    User.hasMany(models.ProductImage, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
   };
 
   return User;

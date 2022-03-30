@@ -3,6 +3,7 @@ import {
   deleteStoreAction, updateStoreProfile, addStore,
   getMyStoreDetails, getStoreDetails, getAllStores,
   updateMyStoreProfile, deleteMyStoreAccount,
+  getStoreDetailsUser,
 } from '../controllers';
 import {protect, onStoreCreation} from '../middlewares';
 
@@ -17,6 +18,7 @@ router
 
 router.put('/me/update', protect, updateMyStoreProfile);
 router.get('/me', protect, getMyStoreDetails);
+router.get('/me/profile/:userId', protect, getStoreDetailsUser);
 router.delete('/me/delete', protect, deleteMyStoreAccount);
 
 router.get('/admin/profile/:storeId', getStoreDetails);

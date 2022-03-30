@@ -41,48 +41,85 @@ export const addOrder = async (req, res) => {
       userId,
       productId,
     } = req.body;
+    const user = await findUserBy({id: userId});
+    const orderBusiness = await findBusinessBy({userId: user.id});
+    const product = await findProductBy({id: productId});
+    const store = await findStoreBy({id: product.storeId});
+    const owner = await findUserBy({id: product.userId});
+    const business = await findBusinessBy({userId: owner.id});
     if (userId) {
-      const user = await findUserBy({id: userId});
-      const orderBusiness = await findBusinessBy({userId: user.id});
-      const product = await findProductBy({id: productId});
-      const store = await findStoreBy({id: product.storeId});
-      const owner = await findUserBy({id: product.userId});
-      const business = await findBusinessBy({userId: owner.id});
-      const orderInfo = {
-        address,
-        city,
-        state,
-        country,
-        pinCode,
-        phoneNumber,
-        productName: product.productTitle,
-        price: product.price,
-        quantity,
-        image,
-        paymentInfoId,
-        paymentInfoStatus,
-        paidAt: Date.now(),
-        itemsPrice,
-        taxPrice,
-        deliveryPrice: product.deliveryPrice,
-        totalPrice,
-        orderStatus,
-        deliveredAt,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        businessName: orderBusiness.businessName,
-        userId,
-        productId,
-        ownerId: owner.id,
-        owner: owner.firstName + ' ' + owner.lastName,
-        store: store.storeName,
-        business: business.businessName,
-      };
-      orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
-      orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-     orderInfo.deliveryPrice;
-      const order = await createOrder(orderInfo);
-      successResponse(res, {...order}, 201);
+      if (orderBusiness) {
+        const orderInfo = {
+          address,
+          city,
+          state,
+          country,
+          pinCode,
+          phoneNumber,
+          productName: product.productTitle,
+          price: product.price,
+          quantity,
+          image,
+          paymentInfoId,
+          paymentInfoStatus,
+          paidAt: Date.now(),
+          itemsPrice,
+          taxPrice,
+          deliveryPrice: product.deliveryPrice,
+          totalPrice,
+          orderStatus,
+          deliveredAt,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          businessName: orderBusiness.businessName,
+          userId,
+          productId,
+          ownerId: owner.id,
+          owner: owner.firstName + ' ' + owner.lastName,
+          store: store.storeName,
+          business: business.businessName,
+        };
+        orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+        orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+        orderInfo.deliveryPrice;
+        const order = await createOrder(orderInfo);
+        successResponse(res, {...order}, 201);
+      } else {
+        const orderInfo = {
+          address,
+          city,
+          state,
+          country,
+          pinCode,
+          phoneNumber,
+          productName: product.productTitle,
+          price: product.price,
+          quantity,
+          image,
+          paymentInfoId,
+          paymentInfoStatus,
+          paidAt: Date.now(),
+          itemsPrice,
+          taxPrice,
+          deliveryPrice: product.deliveryPrice,
+          totalPrice,
+          orderStatus,
+          deliveredAt,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userId,
+          productId,
+          ownerId: owner.id,
+          owner: owner.firstName + ' ' + owner.lastName,
+          store: store.storeName,
+          business: business.businessName,
+        };
+        orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+        orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+orderInfo.deliveryPrice;
+        const order = await createOrder(orderInfo);
+        successResponse(res, {...order}, 201);
+      }
     } else {
       const product = await findProductBy({id: productId});
       const store = await findStoreBy({id: product.storeId});
@@ -392,4 +429,29 @@ export const getSingleStoreOrderDetails = async (req, res, next) => {
   }
 };
 
-
+/**
+         *
+         *  Get profile order details
+         * @static
+         * @param {Request} req - The request from the endpoint.
+         * @param {Response} res - The response returned by the method.
+         * @param {Response} next - The response returned by the method.
+         * @memberof Auth
+         */
+export const getOrderDetailsUser = async (req, res, next) => {
+  try {
+    const orders = await findOrdersBy({userId: req.params.userId});
+    if (!orders) {
+      return errorResponse(res, {code: 401, message:
+                // eslint-disable-next-line max-len
+                'This user does not exist or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      orders,
+    });
+    successResponse(res, {...orders}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};

@@ -376,3 +376,67 @@ export const extractCampaignData = (campaign) =>{
     updatedAt: campaign.updatedAt,
   };
 };
+
+/**
+* Extracts a new campaign Review object from the one supplied
+* @param {object} campaignReview - The user data
+ from which a new campaign Review
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractCampaignReviewData = (campaignReview) =>{
+  return {
+    comment: campaignReview.comment,
+    firstName: campaignReview.firstName,
+    lastName: campaignReview.lastName,
+    businessName: campaignReview.businessName,
+    campaignId: campaignReview.campaignId,
+    userId: campaignReview.userId,
+    createdAt: campaignReview.createdAt,
+    updatedAt: campaignReview.updatedAt,
+  };
+};
+
+/**
+* Extracts a new donation object from the one supplied
+* @param {object} donation - The user data from which a new donation
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractDonationData = (donation) =>{
+  return {
+    amount: donation.amount,
+    firstName: donation.firstName,
+    lastName: donation.lastName,
+    businessName: donation.businessName,
+    amountToBeRepaid: donation.amountToBeRepaid,
+    amountToBeRepaidPerTime: donation.amountToBeRepaidPerTime,
+    amountAlreadyRepaid: donation.amountAlreadyRepaid,
+    firstPaymentDate: donation.firstPaymentDate,
+    lastPaymentDate: donation.lastPaymentDate,
+    campaignId: donation. campaignId,
+    userId: donation.userId,
+    createdAt: donation.createdAt,
+    updatedAt: donation.updatedAt,
+  };
+};
+
+/**
+* Extracts a new product Image object from the one supplied
+* @param {object} productImage - The user data from which a new product Image
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractProductImageData = (productImage) =>{
+  return {
+    publicId: productImage.publicId,
+    url: productImage.url,
+    userId: productImage.userId,
+    productId: productImage.productId,
+    createdAt: productImage.createdAt,
+    updatedAt: productImage.updatedAt,
+  };
+};

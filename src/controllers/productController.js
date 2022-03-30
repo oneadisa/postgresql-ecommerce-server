@@ -232,4 +232,28 @@ export const getMyProductDetails = async (req, res, next) => {
   }
 };
 
-
+/**
+     *
+     *  Get profile details
+     * @static
+     * @param {Request} req - The request from the endpoint.
+     * @param {Response} res - The response returned by the method.
+     * @param {Response} next - The response returned by the method.
+     * @memberof Auth
+     */
+export const getProductDetailsUser = async (req, res, next) => {
+  try {
+    const products = await findProductsBy({userId: req.params.userId});
+    if (!products) {
+      return errorResponse(res, {code: 401, message:
+            'This user exists or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      products,
+    });
+    successResponse(res, {...products}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};

@@ -3,7 +3,7 @@ import {
   deleteOrderAction, updateOrderProfile, addOrder,
   getMyOrderDetails, getOrderDetails, getAllOrders,
   getOrdersProduct, getMyStoreOrderDetails,
-  getSingleStoreOrderDetails,
+  getSingleStoreOrderDetails, getOrderDetailsUser,
 } from '../controllers';
 import {protect, onOrderCreation} from '../middlewares';
 
@@ -16,9 +16,8 @@ router
     .route('/create')
     .post(onOrderCreation, addOrder);
 
-// router.put('/me/update', protect, updateMyOrderProfile);
 router.get('/me', protect, getMyOrderDetails);
-// router.delete('/me/delete', protect, deleteMyOrderAccount);
+router.get('/me/profile/:userId', protect, getOrderDetailsUser);
 
 router.get('/one/order/:orderId', getOrderDetails);
 router.put('/one/update/:orderId', updateOrderProfile);

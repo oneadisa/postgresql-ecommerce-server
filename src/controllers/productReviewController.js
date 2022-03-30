@@ -30,33 +30,49 @@ export const addProductReview = async (req, res) => {
     } = req.body;
     const business = await findBusinessBy({userId});
     const user = await findUserBy({id: userId});
-    const productReviewInfo = {
-      comment,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      businessName: business.businessName,
-      rating,
-      productId,
-      userId,
-    };
-    const review = await findProductReviewBy({productId, userId});
-    if (review) {
-      // const productReview = await updateProductReviewBy(req.body,
-      // {productId, userId});
-      // const productReviewResponse = extractProductReviewData(productReview);
-      // successResponse(res, productReviewResponse, 200);
+    if (business) {
+      const productReviewInfo = {
+        comment,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        businessName: business.businessName,
+        rating,
+        productId,
+        userId,
+      };
+      const review = await findProductReviewBy({productId, userId});
+      if (review) {
+        const productReview = await updateProductReviewBy(req.body,
+            {productId, userId});
+        const productReviewResponse = extractProductReviewData(productReview);
+        successResponse(res, productReviewResponse, 200);
+      } else {
+        const productReview = await createProductReview(productReviewInfo);
+        const reviews = await findProrductReviewsRating({id: productId});
+        successResponse(res, {...productReview}, productResponse, 201);
+        console.log(reviews);
+      }
     } else {
-      const productReview = await createProductReview(productReviewInfo);
-      // const previousProduct = await findProductBy({id: productId});
-      // const newReviewCount = previousProduct.numberOfReviews + 1;
-      const reviews = await findProrductReviewsRating({id: productId});
-      // const newRating = reviews.rating + rating;
-      // const product = await updateProductBy({numberOfReviews: newReviewCount,
-      // ratings: newRating},
-      // {id: productId});
-      // const productResponse = extractProductData(product);
-      successResponse(res, {...productReview}, productResponse, 201);
-      console.log(reviews);
+      const productReviewInfo = {
+        comment,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        rating,
+        productId,
+        userId,
+      };
+      const review = await findProductReviewBy({productId, userId});
+      if (review) {
+        const productReview = await updateProductReviewBy(req.body,
+            {productId, userId});
+        const productReviewResponse = extractProductReviewData(productReview);
+        successResponse(res, productReviewResponse, 200);
+      } else {
+        const productReview = await createProductReview(productReviewInfo);
+        const reviews = await findProrductReviewsRating({id: productId});
+        successResponse(res, {...productReview}, productResponse, 201);
+        console.log(reviews);
+      }
     }
   } catch (error) {
     errorResponse(res, {
@@ -64,16 +80,6 @@ export const addProductReview = async (req, res) => {
       message: error.message,
     });
   }
-
-  //   try {
-  // const {body} = req;
-  // const productReview = await createProductReview(body);
-  // successResponse(res, {...productReview}, 201);
-  //   } catch (error) {
-  // errorResponse(res, {
-  //   message: error.message,
-  // });
-  //   }
 };
 
 /**
@@ -252,4 +258,30 @@ export const getMyProductReviewDetails = async (req, res, next) => {
   }
 };
 
+/**
+       *
+       *  Get profile details
+       * @static
+       * @param {Request} req - The request from the endpoint.
+       * @param {Response} res - The response returned by the method.
+       * @param {Response} next - The response returned by the method.
+       * @memberof Auth
+       */
+export const getProductReviewDetailsUser = async (req, res, next) => {
+  try {
+    const productReviews = await
+    findProductReviewsBy({userId: req.params.userId});
+    if (!productReviews) {
+      return errorResponse(res, {code: 401, message:
+              'This user exists or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      productReviews,
+    });
+    successResponse(res, {...productReviews}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
 

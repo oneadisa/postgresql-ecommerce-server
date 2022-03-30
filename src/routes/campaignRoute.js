@@ -2,7 +2,7 @@ import {Router as expressRouter} from 'express';
 import {
   deleteCampaignAction, updateCampaignProfile, addCampaign,
   getMyCampaignDetails, getCampaignDetails, getAllCampaigns,
-} from '../controllers';
+  getCampaignDetailsUser} from '../controllers';
 import {protect, onCampaignCreation} from '../middlewares';
 
 
@@ -16,6 +16,7 @@ router
 
 // router.put('/me/update', protect, updateMyCampaignProfile);
 router.get('/me', protect, getMyCampaignDetails);
+router.get('/me/profile/:userId', protect, getCampaignDetailsUser);
 // router.delete('/me/delete', protect, deleteMyCampaignAccount);
 
 router.get('/one/campaign/:campaignId', getCampaignDetails);
