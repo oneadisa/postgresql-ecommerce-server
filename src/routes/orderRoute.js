@@ -2,8 +2,9 @@ import {Router as expressRouter} from 'express';
 import {
   deleteOrderAction, updateOrderProfile, addOrder,
   getMyOrderDetails, getOrderDetails, getAllOrders,
-  getOrdersProduct, getMyStoreOrderDetails,
+  getOrdersProduct, getMyStoreOrderDetails, getMyStoreCustomerDetails,
   getSingleStoreOrderDetails, getOrderDetailsUser,
+  getSingleStoreCustomerDetails, getMyStoreRaised, getStoreRaisedUser,
 } from '../controllers';
 import {protect, onOrderCreation} from '../middlewares';
 
@@ -30,6 +31,10 @@ router.delete('/admin/delete/:orderId',
     deleteOrderAction);
 
 router.get('/one/product/:productId', getOrdersProduct);
-router.get('/me/store', getMyStoreOrderDetails);
+router.get('/me/order', protect, getMyStoreOrderDetails);
+router.get('/me/sales', protect, getMyStoreRaised);
+router.get('/one/sales/:ownerId', getStoreRaisedUser);
+router.get('/me/customer', protect, getMyStoreCustomerDetails);
 router.get('/one/order/:ownerId', getSingleStoreOrderDetails);
+router.get('/one/customer/:ownerId', getSingleStoreCustomerDetails);
 export default router;

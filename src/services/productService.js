@@ -38,7 +38,7 @@ export const findProductBy = async (options) => {
  * @memberof ProductService
  */
 export const findProductsBy = async (options) => {
-  return Product.findAll({where: options});
+  return Product.findAndCountAll({where: options});
 };
 
 /**

@@ -49,6 +49,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    recipientId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   });
   Donation.associate = (models) => {
     Donation.belongsTo(models.User, {

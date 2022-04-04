@@ -169,28 +169,6 @@ export const updateCampaignReviewProfile= async (req, res) => {
   }
 };
 
-/**
-         * Updates a campaingReview profile.
-         *
-
-         * @param {Request} req - The request from the endpoint.
-         * @param {Response} res - The response returned by the method.
-         * @return { JSON } A JSON response with the new campaingReview's
-         *  profile update.
-         * @memberof CampaignReviewController
-         */
-// export const updateMyCampaignReviewProfile= async (req, res) => {
-//   try {
-// const campaingReview = await findCampaignReviewBy({userId: req.user.id});
-// const id = campaingReview.id;
-// const newCampaignReview = await updateCampaignReviewBy(req.body, {id});
-// const campaingReviewResponse = extractCampaignReviewData(newCampaignReview);
-// successResponse(res, campaingReviewResponse, 200);
-//   } catch (error) {
-// errorResponse(res, {code: error.statusCode, message: error.message});
-//   }
-// };
-
 
 /**
           * Deletes a campaingReview on a travel request.

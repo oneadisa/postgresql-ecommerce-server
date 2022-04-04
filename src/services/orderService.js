@@ -37,6 +37,15 @@ export const findOrdersBy = async (options) => {
   return Order.findAll({where: options});
 };
 
+/**
+   * Find all product order given a query and sum
+   * @param {number | object | string} options - Order search value
+   * @return {Promise<object>} A promise object with user detail.
+   * @memberof OrderService
+   */
+export const findOrderPriceSum = async (options) => {
+  return await Order.sum('itemsPrice', {where: options});
+};
 
 /**
  * Find all orders given a query and give count

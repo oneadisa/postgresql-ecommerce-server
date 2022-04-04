@@ -3,10 +3,11 @@ import {successResponse, errorResponse,
 import {findBusinessBy, findUserBy, findStoreBy, findProductBy}
   from '../services';
 import ApiError from '../utils/apiError';
-import {createOrder, findOrderBy, findOrdersBy,
-  updateOrderBy, updateProductBy,
+import {createOrder, findOrderBy, findOrdersAndCountBy,
+  updateOrderBy, updateProductBy, findOrderPriceSum,
   fetchAllOrders, deleteOrder} from '../services';
-
+import {Op} from 'sequelize';
+// const {Op} = require('sequelize');
 
 /**
        * Creates a new Order.
@@ -237,9 +238,13 @@ export const getOrderDetails = async (req, res) => {
 export const getOrdersProduct = async (req, res) => {
   try {
     const id = req.params.productId;
-    const orders = await findOrdersBy({productId: id});
+    const {count, rows} = await findOrdersAndCountBy({productId: id});
     // const userResponse = extractUserData(user);
-    successResponse(res, orders, 200);
+    res.status(200).json({
+      success: true,
+      count,
+      rows,
+    });
   } catch (error) {
     errorResponse(res, {code: error.statusCode, message: error.message});
   }
@@ -327,28 +332,6 @@ export const deleteOrderAction = async (req, res) => {
 };
 
 /**
-          * Deletes a order on a travel request.
-          *
-          * @param {Request} req - The request from the endpoint.
-          * @param {Response} res - The response returned by the method.
-          * @return { JSON } A JSON response containing with an empty data
-          *  object.
-          * @memberof OrderController
-          */
-// export const deleteMyOrderAccount = async (req, res) => {
-//   try {
-// const order = await findOrderBy({userId: req.user.id});
-// const orderId = order.id;
-// const rowDeleted = await deleteOrder(orderId);
-// if (!rowDeleted) return errorResponse(res, {});
-// successResponse(res, {code: 200, message:
-//  'Account Deleted Successfully.'}, 200);
-//   } catch (err) {
-// errorResponse(res, {});
-//   }
-// };
-
-/**
          *
          *  Get profile order details
          * @static
@@ -359,15 +342,47 @@ export const deleteOrderAction = async (req, res) => {
          */
 export const getMyOrderDetails = async (req, res, next) => {
   try {
-    const orders = await findOrdersBy({userId: req.user.id});
-    if (!orders) {
+    const {count, rows} = await findOrdersAndCountBy({userId: req.user.id});
+    if (!rows) {
       return errorResponse(res, {code: 401, message:
                 // eslint-disable-next-line max-len
                 'This user does not exist or is logged out. Please login or sign up.'});
     }
     res.status(200).json({
       success: true,
-      orders,
+      count,
+      rows,
+    });
+    successResponse(res, {...orders}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+         *
+         *  Get profile order details
+         * @static
+         * @param {Request} req - The request from the endpoint.
+         * @param {Response} res - The response returned by the method.
+         * @param {Response} next - The response returned by the method.
+         * @memberof Auth
+         */
+export const getMyStoreCustomerDetails = async (req, res, next) => {
+  try {
+    const {count, rows} = await
+    findOrdersAndCountBy({ownerId: req.user.id, userId: {
+      [Op.not]: null,
+    }});
+    if (!rows) {
+      return errorResponse(res, {code: 401, message:
+                  // eslint-disable-next-line max-len
+                  'You do not have any orders yet.'});
+    }
+    res.status(200).json({
+      success: true,
+      count,
+      rows,
     });
     successResponse(res, {...orders}, 201);
   } catch (error) {
@@ -386,15 +401,73 @@ export const getMyOrderDetails = async (req, res, next) => {
          */
 export const getMyStoreOrderDetails = async (req, res, next) => {
   try {
-    const orders = await findOrdersBy({ownerId: req.user.id});
-    if (!orders) {
+    const {count, rows} = await
+    findOrdersAndCountBy({ownerId: req.user.id});
+    if (!rows) {
       return errorResponse(res, {code: 401, message:
                   // eslint-disable-next-line max-len
                   'You do not have any orders yet.'});
     }
     res.status(200).json({
       success: true,
-      orders,
+      count,
+      rows,
+    });
+    successResponse(res, {...orders}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+         *
+         *  Get profile order details
+         * @static
+         * @param {Request} req - The request from the endpoint.
+         * @param {Response} res - The response returned by the method.
+         * @param {Response} next - The response returned by the method.
+         * @memberof Auth
+         */
+export const getMyStoreRaised = async (req, res, next) => {
+  try {
+    const sales = await
+    findOrderPriceSum({ownerId: req.user.id});
+    if (!sales) {
+      return errorResponse(res, {code: 401, message:
+                  // eslint-disable-next-line max-len
+                  'You do not have any orders yet.'});
+    }
+    res.status(200).json({
+      success: true,
+      sales,
+    });
+    successResponse(res, {...orders}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+         *
+         *  Get profile order details
+         * @static
+         * @param {Request} req - The request from the endpoint.
+         * @param {Response} res - The response returned by the method.
+         * @param {Response} next - The response returned by the method.
+         * @memberof Auth
+         */
+export const getStoreRaisedUser = async (req, res, next) => {
+  try {
+    const sales = await
+    findOrderPriceSum({ownerId: req.params.ownerId});
+    if (!sales) {
+      return errorResponse(res, {code: 401, message:
+                  // eslint-disable-next-line max-len
+                  'You do not have any orders yet.'});
+    }
+    res.status(200).json({
+      success: true,
+      sales,
     });
     successResponse(res, {...orders}, 201);
   } catch (error) {
@@ -413,17 +486,48 @@ export const getMyStoreOrderDetails = async (req, res, next) => {
          */
 export const getSingleStoreOrderDetails = async (req, res, next) => {
   try {
-    const orders = await findOrdersBy({ownerId: req.params.ownerId});
-    if (!orders) {
+    const {count, rows} = await
+    findOrdersAndCountBy({ownerId: req.params.ownerId});
+    if (!rows) {
       return errorResponse(res, {code: 401, message:
-                    // eslint-disable-next-line max-len
-                    'This user does not have any orders yet.'});
+      'This user does not have any orders yet.'});
     }
     res.status(200).json({
       success: true,
-      orders,
+      count,
+      rows,
     });
-    successResponse(res, {...orders}, 201);
+    // successResponse(res, {...orders}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+         *
+         *  Get single user profile order details
+         * @static
+         * @param {Request} req - The request from the endpoint.
+         * @param {Response} res - The response returned by the method.
+         * @param {Response} next - The response returned by the method.
+         * @memberof Auth
+         */
+export const getSingleStoreCustomerDetails = async (req, res, next) => {
+  try {
+    const {count, rows} = await
+    findOrdersAndCountBy({ownerId: req.params.ownerId, userId: {
+      [Op.not]: null,
+    }});
+    if (!rows) {
+      return errorResponse(res, {code: 401, message:
+      'This user does not have any orders yet.'});
+    }
+    res.status(200).json({
+      success: true,
+      count,
+      rows,
+    });
+    // successResponse(res, {...orders}, 201);
   } catch (error) {
     errorResponse(res, {});
   }
@@ -440,15 +544,17 @@ export const getSingleStoreOrderDetails = async (req, res, next) => {
          */
 export const getOrderDetailsUser = async (req, res, next) => {
   try {
-    const orders = await findOrdersBy({userId: req.params.userId});
-    if (!orders) {
+    const {count, rows} = await
+    findOrdersAndCountBy({userId: req.params.userId});
+    if (!rows) {
       return errorResponse(res, {code: 401, message:
-                // eslint-disable-next-line max-len
-                'This user does not exist or is logged out. Please login or sign up.'});
+      // eslint-disable-next-line max-len
+      'This user does not exist or is logged out. Please login or sign up.'});
     }
     res.status(200).json({
       success: true,
-      orders,
+      count,
+      rows,
     });
     successResponse(res, {...orders}, 201);
   } catch (error) {

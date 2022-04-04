@@ -16,14 +16,15 @@ const {User} = db;
  */
 export const getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.findAll({});
+    const {count, rows} = await User.findAndCountAll({});
 
     res.status(200).json({
       success: true,
-      users,
+      count,
+      rows,
     });
 
-    successResponse(res, {...users}, 201);
+    // successResponse(res, {...rows}, count, 201);
   } catch (error) {
     errorResponse(res, {
       message: error.message,

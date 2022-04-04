@@ -2,8 +2,8 @@
 import {successResponse, errorResponse,
   extractDonationData} from '../utils/helpers';
 import ApiError from '../utils/apiError';
-import {createDonation, findDonationBy, findDonationsBy,
-  updateDonationBy, findCampaignBy, findUserBy,
+import {createDonation, findDonationBy, findDonationsBy, findDonationsAndCountBy,
+  updateDonationBy, findCampaignBy, findUserBy, findDonationsSum, findDebtSum,
   fetchAllDonations, deleteDonationById, findBusinessBy} from '../services';
 
 
@@ -26,6 +26,7 @@ export const addDonation = async (req, res) => {
     const user = await findUserBy({id: userId});
     const business = await findBusinessBy({userId});
     const campaign = await findCampaignBy({id: campaignId});
+    const recipient = await findUserBy({id: campaign.userId});
 
     const repaymentTime = Math.abs(
         campaign.endDatePledgedProfit - campaign.endDate,
@@ -55,6 +56,7 @@ export const addDonation = async (req, res) => {
         firstPaymentDate: campaign.firstPaymentDate,
         lastPaymentDate: campaign.endDatePledgedProfit,
         campaignId,
+        recipientId: recipient.id,
         userId,
       };
       const donation = await createDonation(donationInfo);
@@ -71,6 +73,7 @@ export const addDonation = async (req, res) => {
         firstPaymentDate: campaign.firstPaymentDate,
         lastPaymentDate: campaign.endDatePledgedProfit,
         campaignId,
+        recipientId: recipient.id,
         userId,
       };
       const donation = await createDonation(donationInfo);
@@ -221,6 +224,87 @@ export const getMyDonationDetails = async (req, res, next) => {
              * @param {Response} next - The response returned by the method.
              * @memberof Auth
              */
+export const getMyDonationRecievedDetails = async (req, res, next) => {
+  try {
+    const {count, rows} = await findDonationsAndCountBy({recipientId: req.user.id});
+    if (!rows) {
+      return errorResponse(res, {code: 401, message:
+                    // eslint-disable-next-line max-len
+                    'This user does not exist or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      count, rows,
+    });
+    successResponse(res, {...Donations}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+             *
+             *  Get profile Donation details
+             * @static
+             * @param {Request} req - The request from the endpoint.
+             * @param {Response} res - The response returned by the method.
+             * @param {Response} next - The response returned by the method.
+             * @memberof Auth
+             */
+export const getMyDonationRecievedSum = async (req, res, next) => {
+  try {
+    const amount = await findDonationsSum({recipientId: req.user.id});
+    if (!amount) {
+      return errorResponse(res, {code: 401, message:
+                    // eslint-disable-next-line max-len
+                    'This user does not exist or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      amount,
+    });
+    successResponse(res, {...Donations}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+             *
+             *  Get profile Donation details
+             * @static
+             * @param {Request} req - The request from the endpoint.
+             * @param {Response} res - The response returned by the method.
+             * @param {Response} next - The response returned by the method.
+             * @memberof Auth
+             */
+export const getMyDebtSum = async (req, res, next) => {
+  try {
+    const amount = await findDebtSum({recipientId: req.user.id});
+    if (!amount) {
+      return errorResponse(res, {code: 401, message:
+                    // eslint-disable-next-line max-len
+                    'This user does not exist or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      amount,
+    });
+    successResponse(res, {...Donations}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+             *
+             *  Get profile Donation details
+             * @static
+             * @param {Request} req - The request from the endpoint.
+             * @param {Response} res - The response returned by the method.
+             * @param {Response} next - The response returned by the method.
+             * @memberof Auth
+             */
 export const getDonationDetailsUser = async (req, res, next) => {
   try {
     const Donations = await findDonationsBy({userId: req.params.userId});
@@ -239,4 +323,183 @@ export const getDonationDetailsUser = async (req, res, next) => {
   }
 };
 
+/**
+             *
+             *  Get profile Donation details
+             * @static
+             * @param {Request} req - The request from the endpoint.
+             * @param {Response} res - The response returned by the method.
+             * @param {Response} next - The response returned by the method.
+             * @memberof Auth
+             */
+export const getDonationSumUser = async (req, res, next) => {
+  try {
+    const sum = await findDonationsSum({userId: req.params.userId});
+    if (!sum) {
+      return errorResponse(res, {code: 401, message:
+                    // eslint-disable-next-line max-len
+                    'This user does not exist or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      sum,
+    });
+    // successResponse(res, {...Donations}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+
+/**
+             *
+             *  Get profile Donation details
+             * @static
+             * @param {Request} req - The request from the endpoint.
+             * @param {Response} res - The response returned by the method.
+             * @param {Response} next - The response returned by the method.
+             * @memberof Auth
+             */
+export const getDonationRecievedDetailsUser = async (req, res, next) => {
+  try {
+    const {count, rows} = await findDonationsAndCountBy({recipientId: req.params.userId});
+    if (!rows) {
+      return errorResponse(res, {code: 401, message:
+                    // eslint-disable-next-line max-len
+                    'This user does not exist or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      count, rows,
+    });
+    successResponse(res, {...Donations}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+             *
+             *  Get profile Donation details
+             * @static
+             * @param {Request} req - The request from the endpoint.
+             * @param {Response} res - The response returned by the method.
+             * @param {Response} next - The response returned by the method.
+             * @memberof Auth
+             */
+export const getDonationRecievedSumUser = async (req, res, next) => {
+  try {
+    const amount = await findDonationsSum({recipientId: req.params.userId});
+    if (!amount) {
+      return errorResponse(res, {code: 401, message:
+                    // eslint-disable-next-line max-len
+                    'This user does not exist or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      amount,
+    });
+    successResponse(res, {...Donations}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+             *
+             *  Get profile Donation details
+             * @static
+             * @param {Request} req - The request from the endpoint.
+             * @param {Response} res - The response returned by the method.
+             * @param {Response} next - The response returned by the method.
+             * @memberof Auth
+             */
+export const getDebtSumUser = async (req, res, next) => {
+  try {
+    const amount = await findDebtSum({recipientId: req.params.userId});
+    if (!amount) {
+      return errorResponse(res, {code: 401, message:
+                    // eslint-disable-next-line max-len
+                    'This user does not exist or is logged out. Please login or sign up.'});
+    }
+    res.status(200).json({
+      success: true,
+      amount,
+    });
+    successResponse(res, {...Donations}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+       * Get reviews that belong to a particular campaing.
+       *
+       * @static
+       * @param {Request} req - The request from the browser.
+       * @param {Response} res - The response returned by the method.
+       * @return { JSON } A JSON response with the newly created booking.
+       * @memberof CampaignReviewController
+       */
+export const getDonationsCampaign = async (req, res) => {
+  try {
+    const id = req.params.campaignId;
+    const {count, rows} = await findDonationsAndCountBy({campaignId: id});
+    res.status(200).json({
+      success: true,
+      count,
+      rows,
+    });
+    // successResponse(res, campaingReviews, 200);
+  } catch (error) {
+    errorResponse(res, {code: error.statusCode, message: error.message});
+  }
+};
+
+/**
+       * Get reviews that belong to a particular campaing.
+       *
+       * @static
+       * @param {Request} req - The request from the browser.
+       * @param {Response} res - The response returned by the method.
+       * @return { JSON } A JSON response with the newly created booking.
+       * @memberof CampaignReviewController
+       */
+export const getDonationsSumCampaign = async (req, res) => {
+  try {
+    const id = req.params.campaignId;
+    const amount = await findDonationsSum({campaignId: id});
+    res.status(200).json({
+      success: true,
+      amount,
+    });
+    // successResponse(res, campaingReviews, 200);
+  } catch (error) {
+    errorResponse(res, {code: error.statusCode, message: error.message});
+  }
+};
+
+
+/**
+       * Get reviews that belong to a particular campaing.
+       *
+       * @static
+       * @param {Request} req - The request from the browser.
+       * @param {Response} res - The response returned by the method.
+       * @return { JSON } A JSON response with the newly created booking.
+       * @memberof CampaignReviewController
+       */
+export const getDebtCampaign = async (req, res) => {
+  try {
+    const id = req.params.campaignId;
+    const amount = await findSumBy({campaignId: id});
+    res.status(200).json({
+      success: true,
+      amount,
+    });
+    // successResponse(res, campaingReviews, 200);
+  } catch (error) {
+    errorResponse(res, {code: error.statusCode, message: error.message});
+  }
+};
 

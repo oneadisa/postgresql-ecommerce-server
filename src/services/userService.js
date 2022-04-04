@@ -112,3 +112,24 @@ export const getProfile = async (userId) => {
 export const deleteUserById= (userId) => {
   return User.destroy({where: {id: userId}});
 };
+
+/**
+ * Fetches all users
+ * @return {Promise<array>} - An instance of notification
+ *  table including it's relationships.
+ * @memberof UserService
+ */
+export const fetchAllUsers = async () => {
+  const users = await User.findAll({});
+  return users;
+};
+
+/**
+ * Find all users matching the query
+ * @param {number | object | string} options - User search value
+ * @return {Promise<object>} A promise object with user detail.
+ * @memberof UserService
+ */
+export const findUsersBy = async (options) => {
+  return User.findAll({where: options});
+};

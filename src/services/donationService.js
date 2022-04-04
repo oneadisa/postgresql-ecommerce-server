@@ -1,7 +1,7 @@
 import {findUserBy} from './';
 import db from '../database/models';
 import ApiError from '../utils/apiError';
-
+// import sequelize from 'sequelize';
 const {Donation} = db;
 
 /**
@@ -57,19 +57,29 @@ export const findDonationsBy = async (options) => {
   return Donation.findAll({where: options});
 };
 
+
 /**
    * Find all product reviews given a query
    * @param {number | object | string} options - Donation search value
    * @return {Promise<object>} A promise object with user detail.
    * @memberof DonationService
    */
-export const findDonationsRating = async (options) => {
-  await Donation.findAll({
-    attributes: [{where: options},
-      [sequelize.fn('average', sequelize.col('rating')), 'total_ratings'],
-    ],
-  });
+export const findDonationsSum = async (options) => {
+  return await Donation.sum('amount', {where: options});
 };
+
+/**
+   * Find sum to be repaid from all campaigns that match
+   * @param {number | object | string} options - Donation search value
+   * @return {Promise<object>} A promise object with user detail.
+   * @memberof DonationService
+   */
+export const findDebtSum = async (options) => {
+  const amount = await Donation.sum('amountToBeRepaid', {where: options});
+
+  return amount;
+};
+
 
 /**
  * Fetches all donations

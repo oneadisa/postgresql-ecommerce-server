@@ -2,6 +2,7 @@ import {Router as expressRouter} from 'express';
 import {
   deleteProductReviewAction, updateProductReviewProfile, addProductReview,
   getMyProductReviewDetails, getProductReviewDetails, getAllProductReviews,
+  getProductRatingProduct,
   getProductReviewsProduct, getProductReviewDetailsUser} from '../controllers';
 import {protect, onProductReviewCreation} from '../middlewares';
 
@@ -27,6 +28,7 @@ router.put('/admin/update/:productReviewId', updateProductReviewProfile);
 router.delete('/admin/delete/:productReviewId',
     deleteProductReviewAction);
 
-router.get('/one/product/:productId', getProductReviewsProduct);
+router.get('/one/review/:productId', getProductReviewsProduct);
+router.get('/one/rating/:productId', getProductRatingProduct);
 
 export default router;

@@ -4,6 +4,7 @@ import {findUserBy} from './';
 import db from '../database/models';
 import ApiError from '../utils/apiError';
 // const { Op } = require('@sequelize/core');
+import sequelize from 'sequelize';
 const {ProductReview} = db;
 
 /**
@@ -38,7 +39,7 @@ export const findProductReviewBy = async (options) => {
  * @memberof ProductReviewService
  */
 export const findProductReviewsBy = async (options) => {
-  return ProductReview.findAll({where: options});
+  return ProductReview.findAndCountAll({where: options});
 };
 
 /**
@@ -47,15 +48,30 @@ export const findProductReviewsBy = async (options) => {
  * @return {Promise<object>} A promise object with user detail.
  * @memberof ProductReviewService
  */
-export const findProrductReviewsRating = async (options) => {
-  await ProductReview.findAll({where: options,
+export const findProductReviewsRating = async (options) => {
+  // const rating = await ProductReview.avg('rating', {where: options});
+  // await ProductReview.findAll({attributes:
+  //  ['productId', [sequelize.fn('SUM', sequelize.col('rating')), 'ratings']],
+  // group: ['productId'],
+  // raw: true,
+  // });
+  const rating = await ProductReview.findAll({where: options,
     attributes: [
-      [sequelize.fn('average', sequelize.col('rating')), 'total_ratings'],
-    ],
+      [sequelize.fn('AVG', sequelize.col('rating')), 'ratings']],
+    raw: true,
   });
 
-  // eslint-disable-next-line max-len
-  // findAll({where: options}, {attributes: [[sequelize.fn('SUM', sequelize.col('rating')), 'ratings']]});
+  return rating;
+};
+
+/**
+ * Find all product reviews given a query and give count
+ * @param {number | object | string} options - Donation search value
+ * @return {Promise<object>} A promise object with user detail.
+ * @memberof DonationService
+ */
+export const findProductReviewsAndCountBy = async (options) => {
+  return await ProductReview.findAndCountAll({where: options});
 };
 
 /**

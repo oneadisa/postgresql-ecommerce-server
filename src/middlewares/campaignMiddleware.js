@@ -19,7 +19,8 @@ export const onCampaignCreation = async (req, res, next) => {
       const user = await findUserBy({id: userId});
       const business = await findBusinessBy({userId});
       const store = await findStoreBy({userId});
-      const {orderNo, orders} = await findOrdersAndCountBy({ownerId: userId});
+      // eslint-disable-next-line no-unused-vars
+      const {count, rows} = await findOrdersAndCountBy({ownerId: userId});
       const amountBeingRaised = Number(req.body.amountBeingRaised);
       // const {storeLink}= req.body;
       // const user = await findUserBy({id: req.user.id});
@@ -47,28 +48,28 @@ export const onCampaignCreation = async (req, res, next) => {
           message: `User with id: ${userId} does not yet have a store,
    please create one to be able to create a campaign.`,
         });
-      } else if (req.body.categoryFunding === 'tier 1' && orderNo < 5 ) {
+      } else if (req.body.categoryFunding === 'tier 1' && count < 20 ) {
         errorResponse(res, {
           code: 403,
           message: `This user ser with id: ${userId} does not yet have
            enough orders, you need at least 20 customers to create
             this tier of campaign.`,
         });
-      } else if (req.body.categoryFunding === 'tier 2' && orderNo < 20) {
+      } else if (req.body.categoryFunding === 'tier 2' && count < 20) {
         errorResponse(res, {
           code: 403,
           message: `This user ser with id: ${userId} does not yet have
  enough orders, you need at least 20 customers to create
   this tier of campaign.`,
         });
-      } else if (req.body.categoryFunding === 'tier 3' && orderNo < 50) {
+      } else if (req.body.categoryFunding === 'tier 3' && count < 50) {
         errorResponse(res, {
           code: 403,
           message: `This user ser with id: ${userId} does not yet have
  enough orders, you need at least 50 customers to create
   this tier of campaign.`,
         });
-      } else if (req.body.categoryFunding === 'tier 4' && orderNo < 200) {
+      } else if (req.body.categoryFunding === 'tier 4' && count < 200) {
         errorResponse(res, {
           code: 403,
           message: `This user ser with id: ${userId} does not yet have
