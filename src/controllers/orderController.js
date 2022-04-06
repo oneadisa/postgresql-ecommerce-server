@@ -5,6 +5,7 @@ import {findBusinessBy, findUserBy, findStoreBy, findProductBy}
 import ApiError from '../utils/apiError';
 import {createOrder, findOrderBy, findOrdersAndCountBy,
   updateOrderBy, updateProductBy, findOrderPriceSum,
+  findOrderTotalPriceSum,
   fetchAllOrders, deleteOrder} from '../services';
 import {Op} from 'sequelize';
 // const {Op} = require('sequelize');
@@ -432,6 +433,34 @@ export const getMyStoreRaised = async (req, res, next) => {
   try {
     const sales = await
     findOrderPriceSum({ownerId: req.user.id});
+    if (!sales) {
+      return errorResponse(res, {code: 401, message:
+                  // eslint-disable-next-line max-len
+                  'You do not have any orders yet.'});
+    }
+    res.status(200).json({
+      success: true,
+      sales,
+    });
+    successResponse(res, {...orders}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+
+/**
+         *
+         *  Get profile order details
+         * @static
+         * @param {Request} req - The request from the endpoint.
+         * @param {Response} res - The response returned by the method.
+         * @param {Response} next - The response returned by the method.
+         * @memberof Auth
+         */
+export const getMyStoreRevenue = async (req, res, next) => {
+  try {
+    const sales = await
+    findOrderTotalPriceSum({ownerId: req.user.id});
     if (!sales) {
       return errorResponse(res, {code: 401, message:
                   // eslint-disable-next-line max-len

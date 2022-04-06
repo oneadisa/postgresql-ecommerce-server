@@ -217,14 +217,15 @@ export const deleteProductAction = async (req, res) => {
      */
 export const getMyProductDetails = async (req, res, next) => {
   try {
-    const products = await findProductsBy({userId: req.user.id});
-    if (!products) {
+    const {count, rows} = await findProductsBy({userId: req.user.id});
+    if (!rows) {
       return errorResponse(res, {code: 401, message:
             'This user exists or is logged out. Please login or sign up.'});
     }
     res.status(200).json({
       success: true,
-      products,
+      count,
+      rows,
     });
     successResponse(res, {...products}, 201);
   } catch (error) {

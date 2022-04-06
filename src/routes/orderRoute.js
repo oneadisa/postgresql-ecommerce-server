@@ -5,6 +5,7 @@ import {
   getOrdersProduct, getMyStoreOrderDetails, getMyStoreCustomerDetails,
   getSingleStoreOrderDetails, getOrderDetailsUser,
   getSingleStoreCustomerDetails, getMyStoreRaised, getStoreRaisedUser,
+  getMyStoreRevenue,
 } from '../controllers';
 import {protect, onOrderCreation} from '../middlewares';
 
@@ -33,6 +34,7 @@ router.delete('/admin/delete/:orderId',
 router.get('/one/product/:productId', getOrdersProduct);
 router.get('/me/order', protect, getMyStoreOrderDetails);
 router.get('/me/sales', protect, getMyStoreRaised);
+router.get('/me/revenue', protect, getMyStoreRevenue);
 router.get('/one/sales/:ownerId', getStoreRaisedUser);
 router.get('/me/customer', protect, getMyStoreCustomerDetails);
 router.get('/one/order/:ownerId', getSingleStoreOrderDetails);

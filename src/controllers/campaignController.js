@@ -3,7 +3,7 @@ import {successResponse, errorResponse,
   extractCampaignData} from '../utils/helpers';
 import ApiError from '../utils/apiError';
 import {createCampaign, findCampaignBy, findCampaignsBy,
-  updateCampaignBy, findStoreBy,
+  updateCampaignBy, findStoreBy, findCampaignsAndCountBy,
   fetchAllCampaigns, deleteCampaignById, findBusinessBy} from '../services';
 
 
@@ -278,15 +278,16 @@ export const deleteCampaignAction = async (req, res) => {
            */
 export const getMyCampaignDetails = async (req, res, next) => {
   try {
-    const campaigns = await findCampaignsBy({userId: req.user.id});
-    if (!campaigns) {
+    const {count, rows} = await findCampaignsAndCountBy({userId: req.user.id});
+    if (!rows) {
       return errorResponse(res, {code: 401, message:
                   // eslint-disable-next-line max-len
                   'This user does not exist or is logged out. Please login or sign up.'});
     }
     res.status(200).json({
       success: true,
-      campaigns,
+      count,
+      rows,
     });
     successResponse(res, {...campaigns}, 201);
   } catch (error) {
