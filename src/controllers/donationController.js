@@ -124,7 +124,7 @@ export const addDonationCash = async (req, res) => {
       await updateWallet(recipient.id, amount);
       const donation = await createDonation(donationInfo);
       let counter = 1;
-      const payoutDelay = campaign.firstPaymentDate - new Date().getTime();
+      const payoutDelay = campaign.endDate - new Date().getTime();
 
       const triggerPayout = () => setTimeout(newPayout = async ()=> {
         const reference = v4();
@@ -201,7 +201,7 @@ export const addDonationCash = async (req, res) => {
       await updateWallet(recipient.id, amount);
       const donation = await createDonation(donationInfo);
       let counter = 1;
-      const payoutDelay = campaign.firstPaymentDate - new Date().getTime();
+      const payoutDelay = campaign.endDate - new Date().getTime();
       const triggerPayout = () => setTimeout(newPayout = async ()=> {
         const reference = v4();
         const summary = 'Loan Repayment';
@@ -325,7 +325,7 @@ export const addDonationWallet = async (req, res) => {
       ]);
       const donation = await createDonation(donationInfo);
       let counter = 1;
-      const payoutDelay = campaign.firstPaymentDate - new Date().getTime();
+      const payoutDelay = campaign.endDate - new Date().getTime();
 
       const triggerPayout = () => setTimeout(newPayout = async ()=> {
         const reference = v4();
@@ -403,7 +403,7 @@ export const addDonationWallet = async (req, res) => {
       ]);
       const donation = await createDonation(donationInfo);
       let counter = 1;
-      const payoutDelay = campaign.firstPaymentDate - new Date().getTime();
+      const payoutDelay = campaign.endDate - new Date().getTime();
       const triggerPayout = () => setTimeout(newPayout = async ()=> {
         const reference = v4();
         const summary = 'Loan Repayment';
