@@ -36,3 +36,5 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 module.exports = db;
+// npx sequelize db:migrate:undo --name 20180704124934-create-branch.js
+

@@ -27,7 +27,16 @@ module.exports = (sequelize, DataTypes) => {
           values: ['LLC', 'sole proprietorship', 'unregistered'],
           allowNull: false,
         },
+
+
         cacCertURL: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          validate: {
+            isUrl: true,
+          },
+        },
+        formCO7: {
           type: DataTypes.STRING,
           allowNull: true,
           validate: {

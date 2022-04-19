@@ -1,7 +1,7 @@
 import {Router as expressRouter} from 'express';
 import {
-  deleteOrderAction, updateOrderProfile, addOrder,
-  getMyOrderDetails, getOrderDetails, getAllOrders,
+  deleteOrderAction, updateOrderProfile, addCashOrder,
+  getMyOrderDetails, getOrderDetails, getAllOrders, addWalletOrder,
   getOrdersProduct, getMyStoreOrderDetails, getMyStoreCustomerDetails,
   getSingleStoreOrderDetails, getOrderDetailsUser,
   getSingleStoreCustomerDetails, getMyStoreRaised, getStoreRaisedUser,
@@ -16,7 +16,8 @@ router.route('/all').get(getAllOrders);
 
 router
     .route('/create')
-    .post(onOrderCreation, addOrder);
+    .post(onOrderCreation, addCashOrder);
+router.post('/create/wallet', addWalletOrder);
 
 router.get('/me', protect, getMyOrderDetails);
 router.get('/me/profile/:userId', protect, getOrderDetailsUser);

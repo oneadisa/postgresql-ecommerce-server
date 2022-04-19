@@ -9,3 +9,5 @@ export * from './campaignController';
 export * from './campaignReviewController';
 export * from './donationController';
 export * from './productImageController';
+export * from './walletController';
+export * from './payoutController';

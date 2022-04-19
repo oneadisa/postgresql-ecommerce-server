@@ -3,7 +3,7 @@ import {
   deleteStoreAction, updateStoreProfile, addStore,
   getMyStoreDetails, getStoreDetails, getAllStores,
   updateMyStoreProfile, deleteMyStoreAccount,
-  getStoreDetailsUser,
+  getStoreDetailsUser, getStoreProducts,
 } from '../controllers';
 import {protect, onStoreCreation} from '../middlewares';
 
@@ -21,8 +21,10 @@ router.get('/me', protect, getMyStoreDetails);
 router.get('/me/profile/:userId', protect, getStoreDetailsUser);
 router.delete('/me/delete', protect, deleteMyStoreAccount);
 
-router.get('/admin/profile/:storeId', getStoreDetails);
-router.put('/admin/update/:storeId', updateStoreProfile);
-router.delete('/admin/delete/:storeId', protect, deleteStoreAction);
+router.get('/one/products/:storeId', getStoreProducts);
+
+router.get('/one/profile/:storeId', getStoreDetails);
+router.put('/one/update/:storeId', updateStoreProfile);
+router.delete('/one/delete/:storeId', protect, deleteStoreAction);
 
 export default router;

@@ -89,6 +89,28 @@ module.exports = {
         allowNull: false,
         defaultValue: 0,
       },
+      twitter: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+     'https://twitter.com',
+        validate: {
+          isUrl: true,
+        },
+      },
+      facebook: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+     'https://facebook.com',
+        validate: {
+          isUrl: true,
+        },
+      },
+      whatsapp: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

@@ -31,7 +31,19 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
+      phoneNumber: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
       productId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      productName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      ownerId: {
         type: Sequelize.INTEGER,
         allowNull: false,
       },

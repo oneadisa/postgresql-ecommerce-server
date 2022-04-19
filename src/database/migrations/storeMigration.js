@@ -45,6 +45,10 @@ module.exports = {
           isUrl: true,
         },
       },
+      deliveryPrice: {
+        type: Sequelize.DOUBLE,
+        allowNull: false,
+      },
       businessId: {
         type: Sequelize.INTEGER,
         allowNull: false,

@@ -135,3 +135,13 @@ export const deleteProductImage = async (productId) => {
   return deleted;
 };
 
+/**
+ * Find all product reviews given a query and give count
+ * @param {number | object | string} options - Donation search value
+ * @return {Promise<object>} A promise object with user detail.
+ * @memberof DonationService
+ */
+export const findProductImagesAndCountBy = async (options) => {
+  return await ProductImage.findAndCountAll({where: options});
+};
+

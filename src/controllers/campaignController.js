@@ -2,7 +2,7 @@
 import {successResponse, errorResponse,
   extractCampaignData} from '../utils/helpers';
 import ApiError from '../utils/apiError';
-import {createCampaign, findCampaignBy, findCampaignsBy,
+import {createCampaign, findCampaignBy, findCampaignsBy, findUserBy,
   updateCampaignBy, findStoreBy, findCampaignsAndCountBy,
   fetchAllCampaigns, deleteCampaignById, findBusinessBy} from '../services';
 
@@ -50,6 +50,7 @@ export const addCampaign = async (req, res) => {
     } = req.body;
     const business = await findBusinessBy({userId});
     const store = await findStoreBy({userId});
+    const user = await findUserBy({id: userId});
     const campaignInfo = {
       campaignName,
       natureOfBusiness,
@@ -87,6 +88,9 @@ export const addCampaign = async (req, res) => {
       familiarWithCrowdFunding,
       storeOnGaged,
       // paymentStartDate,
+      twitter: user.twitter,
+      facebook: user.facebook,
+      whatsApp: user.whatsApp,
       endDate: 0,
       firstPaymentDate: 0,
       firstPaymentDateString: '',
@@ -295,6 +299,7 @@ export const getMyCampaignDetails = async (req, res, next) => {
   }
 };
 
+
 /**
            *
            *  Get profile campaign details
@@ -323,3 +328,31 @@ export const getCampaignDetailsUser = async (req, res, next) => {
 };
 
 
+// Do this instead
+setTimeout(function() {
+  console.log('Hello World!');
+}, 500);
+
+// let counter = 1;
+// const triggerPayout = ()=> {
+// console.log('Run No. ' +counter);
+// if (counter < 5) {
+// counter++;
+// setTimeout(triggerPayout, 400);
+// }
+// };
+//
+// triggerPayout();
+
+let counter = 1;
+
+const triggerPayout = () => setTimeout(newPayout = ()=> {
+  console.log('Run No. ' +counter);
+  if (counter < 5) {
+    counter++;
+    setTimeout(newPayout, 2000);
+  }
+}, 5000);
+
+
+triggerPayout();

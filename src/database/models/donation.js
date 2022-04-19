@@ -41,6 +41,18 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0,
     },
+    campaignName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    ownerLogo: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    investorBrief: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     firstPaymentDate: {
       type: DataTypes.DATE,
       allowNull: false,

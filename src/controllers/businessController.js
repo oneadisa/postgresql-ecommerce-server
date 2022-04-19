@@ -1,9 +1,8 @@
 import {successResponse, errorResponse, extractBusinessData}
   from '../utils/helpers';
 import {createBusiness, findBusinessBy, updateBusinessBy,
+  fetchAllBusinessess,
   deleteBusinessById} from '../services';
-import db from '../database/models';
-const {Business} = db;
 
 /**
  * Get all businesses
@@ -17,7 +16,7 @@ const {Business} = db;
  */
 export const getAllBusinesses = async (req, res, next) => {
   try {
-    const businesses = await Business.findAll({});
+    const businesses = await fetchAllBusinessess();
 
     res.status(200).json({
       success: true,
@@ -176,7 +175,7 @@ export const deleteMyBusinessAccount = async (req, res) => {
  */
 export const getMyBusinessDetails = async (req, res, next) => {
   try {
-    const business = await findBusinessBy({userId: req.user.id});
+    const business = await findBusinessBy({userId: req.params.userId});
     if (!business) {
       return errorResponse(res, {code: 401, message:
         'This user does not exist or is logged out. Please login or sign up.'});

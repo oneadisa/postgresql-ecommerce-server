@@ -38,6 +38,10 @@ module.exports = (sequelize, DataTypes) => {
         isUrl: true,
       },
     },
+    deliveryPrice: {
+      type: DataTypes.DOUBLE,
+      allowNull: false,
+    },
     businessId: {
       type: DataTypes.INTEGER,
       allowNull: false,

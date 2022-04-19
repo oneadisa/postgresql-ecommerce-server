@@ -48,10 +48,12 @@ module.exports = (sequelize, DataTypes) => {
         isUrl: true,
       },
     },
-    role: {type: DataTypes.STRING,
+    role: {
+      type: DataTypes.STRING,
       allowNull: false,
       defaultValue:
-        'user'},
+        'user',
+    },
     meansOfID: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -77,6 +79,28 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    twitter: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue:
+        'https://twitter.com',
+      validate: {
+        isUrl: true,
+      },
+    },
+    facebook: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue:
+        'https://facebook.com',
+      validate: {
+        isUrl: true,
+      },
+    },
+    whatsapp: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     walletBalance: {
       type: DataTypes.DOUBLE,
       allowNull: false,
@@ -85,6 +109,13 @@ module.exports = (sequelize, DataTypes) => {
   });
   User.associate = (models) => {
     User.hasOne(models.Business, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
+    User.hasOne(models.Wallet, {
       foreignKey: {
         name: 'userId',
       },
@@ -141,6 +172,34 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: 'CASCADE',
     });
     User.hasMany(models.ProductImage, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
+    User.hasMany(models.WalletTransfer, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
+    User.hasMany(models.WalletTransaction, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
+    User.hasMany(models.Transaction, {
+      foreignKey: {
+        name: 'userId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
+    User.hasMany(models.Payout, {
       foreignKey: {
         name: 'userId',
       },

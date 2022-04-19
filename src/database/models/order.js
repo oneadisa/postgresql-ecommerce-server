@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     productName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -81,12 +85,18 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    firstName: {type: DataTypes.STRING,
-      allowNull: true},
-    lastName: {type: DataTypes.STRING,
-      allowNull: true},
-    businessName: {type: DataTypes.STRING,
-      allowNull: true},
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    businessName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -95,14 +105,22 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    ownerId: {type: DataTypes.INTEGER,
-      allowNull: true},
-    owner: {type: DataTypes.STRING,
-      allowNull: true},
-    store: {type: DataTypes.STRING,
-      allowNull: true},
-    business: {type: DataTypes.STRING,
-      allowNull: true},
+    ownerId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    owner: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    store: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    business: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   });
   Order.associate = (models) => {
     Order.belongsTo(models.User, {

@@ -31,6 +31,10 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
+      email: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       productName: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -88,12 +92,18 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
-      firstName: {type: Sequelize.STRING,
-        allowNull: true},
-      lastName: {type: Sequelize.STRING,
-        allowNull: true},
-      businessName: {type: Sequelize.STRING,
-        allowNull: true},
+      firstName: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      lastName: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      businessName: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       userId: {
         type: Sequelize.INTEGER,
         allowNull: true,
@@ -102,14 +112,22 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-      ownerId: {type: Sequelize.INTEGER,
-        allowNull: true},
-      owner: {type: Sequelize.STRING,
-        allowNull: true},
-      store: {type: Sequelize.STRING,
-        allowNull: true},
-      business: {type: Sequelize.STRING,
-        allowNull: true},
+      ownerId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      owner: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      store: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      business: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

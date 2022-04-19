@@ -1,10 +1,12 @@
 import {Router as expressRouter} from 'express';
 import {
-  deleteDonationAction, updateDonationProfile, addDonation,
+  deleteDonationAction, updateDonationProfile, addDonationWallet,
+  addDonationCash,
   getMyDonationDetails, getMyDonationRecievedDetails, getDonationSumUser,
   getDonationDetails, getAllDonations, getMyDonationRecievedSum,
   getMyDebtSum, getDonationRecievedSumUser, getDebtSumUser,
   getDonationDetailsUser, getDonationRecievedDetailsUser,
+  getMyDonationsCampaign,
   getDonationsCampaign, getDonationsSumCampaign, getDebtCampaign}
   from '../controllers';
 import {protect, onDonationCreation} from '../middlewares';
@@ -15,9 +17,9 @@ const router = expressRouter();
 router.route('/all').get(getAllDonations);
 
 router
-    .route('/create')
-    .post(onDonationCreation, addDonation);
-
+    .route('/wallet/create')
+    .post(onDonationCreation, addDonationWallet);
+router.post('/cash/create', addDonationCash);
 router.get('/me', protect, getMyDonationDetails);
 router.get('/me/donated', protect, getDonationSumUser);
 router.get('/me/campaign', protect, getMyDonationRecievedDetails);
@@ -42,4 +44,6 @@ router.delete('/admin/delete/:donationId',
 router.get('/one/campaign/:campaignId', protect, getDonationsCampaign);
 router.get('/one/raised/:campaignId', protect, getDonationsSumCampaign);
 router.get('/one/debt/:campaignId', protect, getDebtCampaign);
+
+router.get('/one/donation/:campaignId', protect, getMyDonationsCampaign);
 export default router;

@@ -10,7 +10,9 @@ import orderRoute from './orderRoute';
 import campaignRoute from './campaignRoute.js';
 import campaignReviewRoute from './campaignReviewRoute.js';
 import donation from './donationRoute';
+import payoutRoute from './payoutRoute';
 import productImageRoute from './productImageRoute';
+import walletRoute from './walletRoute';
 
 const router = expressRouter();
 
@@ -24,7 +26,9 @@ router.use('/order', orderRoute);
 router.use('/campaign', campaignRoute);
 router.use('/campaign/review', campaignReviewRoute);
 router.use('/donation', donation);
+router.use('/payout', payoutRoute);
 router.use('/product/image', productImageRoute);
+router.use('/wallet', walletRoute);
 
 
 export default router;

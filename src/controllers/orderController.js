@@ -1,13 +1,25 @@
-import {successResponse, errorResponse,
-  extractOrderData, extractProductData} from '../utils/helpers';
+/* eslint-disable max-len */
+/* eslint-disable camelcase */
+import {
+  successResponse, errorResponse,
+  extractOrderData, extractProductData,
+} from '../utils/helpers';
 import {findBusinessBy, findUserBy, findStoreBy, findProductBy}
   from '../services';
 import ApiError from '../utils/apiError';
-import {createOrder, findOrderBy, findOrdersAndCountBy,
+import {
+  createOrder, findOrderBy, findOrdersAndCountBy,
   updateOrderBy, updateProductBy, findOrderPriceSum,
-  findOrderTotalPriceSum,
-  fetchAllOrders, deleteOrder} from '../services';
+  findOrderTotalPriceSum, findTransactionBy,
+  fetchAllOrders, deleteOrder,
+} from '../services';
+import {
+  createWallet, findWalletBy,
+  addWalletTransaction,
+} from '../services';
 import {Op} from 'sequelize';
+const {creditAccount, debitAccount} = require( '../utils/transfer');
+const {v4} = require('uuid');
 // const {Op} = require('sequelize');
 
 /**
@@ -19,8 +31,31 @@ import {Op} from 'sequelize';
        * @return {JSON} A JSON response with the created Order's
        *  details.
        */
-export const addOrder = async (req, res) => {
+export const addCashOrder = async (req, res) => {
   try {
+    const {transaction_id} = req.query;
+    // URL with transaction ID of which will be used to confirm
+    //  transaction status
+    const url = `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`;
+    // Network call to confirm transaction status
+    const response = await axios({
+      url,
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
+      },
+    });
+    console.log(response.data);
+    const {currency, id, amount, customer} = response.data.data;
+    const {status} = response.data.data;
+    // check if transaction id already exist
+    const transactionExist = await findTransactionBy({transactionId: id});
+    if (transactionExist) {
+      return res.status(409).
+          send('Sorry, This Transaction Already Exists.');
+    }
     const {
       address,
       city,
@@ -42,7 +77,7 @@ export const addOrder = async (req, res) => {
       businessName,
       userId,
       productId,
-    } = req.body;
+    } = response.data.data.meta;
     const user = await findUserBy({id: userId});
     const orderBusiness = await findBusinessBy({userId: user.id});
     const product = await findProductBy({id: productId});
@@ -58,6 +93,7 @@ export const addOrder = async (req, res) => {
           country,
           pinCode,
           phoneNumber,
+          email: user.email,
           productName: product.productTitle,
           price: product.price,
           quantity,
@@ -83,9 +119,25 @@ export const addOrder = async (req, res) => {
         };
         orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
         orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-        orderInfo.deliveryPrice;
+          orderInfo.deliveryPrice;
+        // check if customer exist in our database
+        // const owner = await findUserBy({email: customer.email});
+        // check if user have a wallet, else create wallet
+        await validateUserWallet(owner.id);
+        // create wallet transaction
+        const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
+        // create transaction
+        const transaction = await createTransaction(owner.id, id,
+            status, currency, amount, customer);
+        await updateWallet(owner.id, amount);
         const order = await createOrder(orderInfo);
-        successResponse(res, {...order}, 201);
+        // successResponse(res, {...order}, 201);
+        res.status(200).json({
+          success: true,
+          order,
+          walletTransaction,
+          transaction,
+        });
       } else {
         const orderInfo = {
           address,
@@ -94,6 +146,7 @@ export const addOrder = async (req, res) => {
           country,
           pinCode,
           phoneNumber,
+          email: user.email,
           productName: product.productTitle,
           price: product.price,
           quantity,
@@ -118,9 +171,25 @@ export const addOrder = async (req, res) => {
         };
         orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
         orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-orderInfo.deliveryPrice;
+          orderInfo.deliveryPrice;
+        // check if customer exist in our database
+        // const owner = await findUserBy({email: customer.email});
+        // check if user have a wallet, else create wallet
+        await validateUserWallet(owner.id);
+        // create wallet transaction
+        const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
+        // create transaction
+        const transaction = await createTransaction(owner.id, id,
+            status, currency, amount, customer);
+        await updateWallet(owner.id, amount);
         const order = await createOrder(orderInfo);
-        successResponse(res, {...order}, 201);
+        // successResponse(res, {...order}, 201);
+        res.status(200).json({
+          success: true,
+          order,
+          walletTransaction,
+          transaction,
+        });
       }
     } else {
       const product = await findProductBy({id: productId});
@@ -159,9 +228,25 @@ orderInfo.deliveryPrice;
       };
       orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
       orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-       orderInfo.deliveryPrice;
+        orderInfo.deliveryPrice;
+      // check if customer exist in our database
+      // const owner = await findUserBy({email: customer.email});
+      // check if user have a wallet, else create wallet
+      await validateUserWallet(owner.id);
+      // create wallet transaction
+      const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
+      // create transaction
+      const transaction = await createTransaction(owner.id, id,
+          status, currency, amount, customer);
+      await updateWallet(owner.id, amount);
       const order = await createOrder(orderInfo);
-      successResponse(res, {...order}, 201);
+      // successResponse(res, {...order}, 201);
+      res.status(200).json({
+        success: true,
+        order,
+        walletTransaction,
+        transaction,
+      });
     }
   } catch (error) {
     errorResponse(res, {
@@ -169,16 +254,214 @@ orderInfo.deliveryPrice;
       message: error.message,
     });
   }
+};
 
-  //   try {
-  // const {body} = req;
-  // const order = await createOrder(body);
-  // successResponse(res, {...order}, 201);
-  //   } catch (error) {
-  // errorResponse(res, {
-  //   message: error.message,
-  // });
-  //   }
+/**
+       * Creates a new Order.
+       *
+       * @param {Request} req The request from the endpoint.
+       * @param {Response} res The response returned by the method.
+       * @memberof OrderController
+       * @return {JSON} A JSON response with the created Order's
+       *  details.
+       */
+export const addWalletOrder = async (req, res) => {
+  try {
+    const {
+      address,
+      city,
+      state,
+      country,
+      pinCode,
+      phoneNumber,
+      quantity,
+      image,
+      paymentInfoId,
+      paymentInfoStatus,
+      itemsPrice,
+      totalPrice,
+      taxPrice,
+      orderStatus,
+      deliveredAt,
+      firstName,
+      lastName,
+      businessName,
+      userId,
+      productId,
+    } = req.body;
+    const user = await findUserBy({id: userId});
+    const orderBusiness = await findBusinessBy({userId: user.id});
+    const product = await findProductBy({id: productId});
+    const store = await findStoreBy({id: product.storeId});
+    const owner = await findUserBy({id: product.userId});
+    const business = await findBusinessBy({userId: owner.id});
+    if (userId) {
+      if (orderBusiness) {
+        const orderInfo = {
+          address,
+          city,
+          state,
+          country,
+          pinCode,
+          phoneNumber,
+          email: user.email,
+          productName: product.productTitle,
+          price: product.price,
+          quantity,
+          image,
+          paymentInfoId,
+          paymentInfoStatus,
+          paidAt: Date.now(),
+          itemsPrice,
+          taxPrice,
+          deliveryPrice: product.deliveryPrice,
+          totalPrice,
+          orderStatus,
+          deliveredAt,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          businessName: orderBusiness.businessName,
+          userId,
+          productId,
+          ownerId: owner.id,
+          owner: owner.firstName + ' ' + owner.lastName,
+          store: store.storeName,
+          business: business.businessName,
+        };
+        orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+        orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+          orderInfo.deliveryPrice;
+        const reference = v4();
+        const summary = `Order from ${store.storeName}`;
+        await Promise.all([
+          debitAccount(
+              {amount, userId: userId, purpose: `Payment for order from ${store.storeName}`, reference, summary,
+                trnxSummary: `TRFR TO: ${owner.id}. TRNX REF:${reference} `}),
+          creditAccount(
+              {amount, userId: owner.id, purpose: `New Order`, reference, summary,
+                trnxSummary: `TRFR FROM: ${userId}. TRNX REF:${reference} `}),
+        ]);
+        const order = await createOrder(orderInfo);
+        // successResponse(res, {...order}, 201);
+        res.status(200).json({
+          success: true,
+          order,
+          // walletTransaction,
+        });
+      } else {
+        const orderInfo = {
+          address,
+          city,
+          state,
+          country,
+          pinCode,
+          phoneNumber,
+          email: user.email,
+          productName: product.productTitle,
+          price: product.price,
+          quantity,
+          image,
+          paymentInfoId,
+          paymentInfoStatus,
+          paidAt: Date.now(),
+          itemsPrice,
+          taxPrice,
+          deliveryPrice: product.deliveryPrice,
+          totalPrice,
+          orderStatus,
+          deliveredAt,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userId,
+          productId,
+          ownerId: owner.id,
+          owner: owner.firstName + ' ' + owner.lastName,
+          store: store.storeName,
+          business: business.businessName,
+        };
+        orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+        orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+          orderInfo.deliveryPrice;
+        const reference = v4();
+        const summary = `Order from ${store.storeName}`;
+        await Promise.all([
+          debitAccount(
+              {amount, userId: userId, purpose: `Payment for order from ${store.storeName}`, reference, summary,
+                trnxSummary: `TRFR TO: ${owner.id}. TRNX REF:${reference} `}),
+          creditAccount(
+              {amount, userId: owner.id, purpose: `New Order`, reference, summary,
+                trnxSummary: `TRFR FROM: ${userId}. TRNX REF:${reference} `}),
+        ]);
+        const order = await createOrder(orderInfo);
+        // successResponse(res, {...order}, 201);
+        res.status(200).json({
+          success: true,
+          order,
+          // walletTransaction,
+        });
+      }
+    } else {
+      const product = await findProductBy({id: productId});
+      const store = await findStoreBy({id: product.storeId});
+      const owner = await findUserBy({id: product.userId});
+      const business = await findBusinessBy({userId: owner.id});
+      const orderInfo = {
+        address,
+        city,
+        state,
+        country,
+        pinCode,
+        phoneNumber,
+        productName: product.productTitle,
+        price: product.price,
+        quantity,
+        image,
+        paymentInfoId,
+        paymentInfoStatus,
+        paidAt: Date.now(),
+        itemsPrice,
+        taxPrice,
+        deliveryPrice: product.deliveryPrice,
+        totalPrice,
+        orderStatus,
+        deliveredAt,
+        firstName,
+        lastName,
+        businessName,
+        userId,
+        productId,
+        ownerId: owner.id,
+        owner: owner.firstName + ' ' + owner.lastName,
+        store: store.storeName,
+        business: business.businessName,
+      };
+      orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+      orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+        orderInfo.deliveryPrice;
+      const reference = v4();
+      const summary = `Order from ${store.storeName}`;
+      await Promise.all([
+        debitAccount(
+            {amount, userId: userId, purpose: `Payment for order from ${store.storeName}`, reference, summary,
+              trnxSummary: `TRFR TO: ${owner.id}. TRNX REF:${reference} `}),
+        creditAccount(
+            {amount, userId: owner.id, purpose: `Order`, reference, summary,
+              trnxSummary: `TRFR FROM: ${userId}. TRNX REF:${reference} `}),
+      ]);
+      const order = await createOrder(orderInfo);
+      // successResponse(res, {...order}, 201);
+      res.status(200).json({
+        success: true,
+        order,
+        // walletTransaction,
+      });
+    }
+  } catch (error) {
+    errorResponse(res, {
+      code: error.statusCode,
+      message: error.message,
+    });
+  }
 };
 
 /**
@@ -262,7 +545,7 @@ export const getOrdersProduct = async (req, res) => {
        *  profile update.
        * @memberof OrderController
        */
-export const updateOrderProfile= async (req, res, next) => {
+export const updateOrderProfile = async (req, res, next) => {
   try {
     const id = req.params.orderId;
     const order = await findOrderBy({id});
@@ -273,8 +556,10 @@ export const updateOrderProfile= async (req, res, next) => {
     } else if (req.body.orderStatus === 'Delivered') {
       const id = req.params.orderId;
       const order = await findOrderBy({id});
-      const updatedOrder = await updateOrderBy({orderStatus: 'Delivered',
-        deliveredAt: Date.now()}, {id});
+      const updatedOrder = await updateOrderBy({
+        orderStatus: 'Delivered',
+        deliveredAt: Date.now(),
+      }, {id});
       const previousProduct = await findProductBy({id: order.productId});
       const newUnitCount = previousProduct.productUnitCount - order.quantity;
       const product = await updateProductBy({productUnitCount: newUnitCount},
@@ -345,9 +630,11 @@ export const getMyOrderDetails = async (req, res, next) => {
   try {
     const {count, rows} = await findOrdersAndCountBy({userId: req.user.id});
     if (!rows) {
-      return errorResponse(res, {code: 401, message:
-                // eslint-disable-next-line max-len
-                'This user does not exist or is logged out. Please login or sign up.'});
+      return errorResponse(res, {
+        code: 401, message:
+          // eslint-disable-next-line max-len
+          'This user does not exist or is logged out. Please login or sign up.',
+      });
     }
     res.status(200).json({
       success: true,
@@ -372,13 +659,17 @@ export const getMyOrderDetails = async (req, res, next) => {
 export const getMyStoreCustomerDetails = async (req, res, next) => {
   try {
     const {count, rows} = await
-    findOrdersAndCountBy({ownerId: req.user.id, userId: {
-      [Op.not]: null,
-    }});
+    findOrdersAndCountBy({
+      ownerId: req.user.id, userId: {
+        [Op.not]: null,
+      },
+    });
     if (!rows) {
-      return errorResponse(res, {code: 401, message:
-                  // eslint-disable-next-line max-len
-                  'You do not have any orders yet.'});
+      return errorResponse(res, {
+        code: 401, message:
+          // eslint-disable-next-line max-len
+          'You do not have any orders yet.',
+      });
     }
     res.status(200).json({
       success: true,
@@ -405,9 +696,11 @@ export const getMyStoreOrderDetails = async (req, res, next) => {
     const {count, rows} = await
     findOrdersAndCountBy({ownerId: req.user.id});
     if (!rows) {
-      return errorResponse(res, {code: 401, message:
-                  // eslint-disable-next-line max-len
-                  'You do not have any orders yet.'});
+      return errorResponse(res, {
+        code: 401, message:
+          // eslint-disable-next-line max-len
+          'You do not have any orders yet.',
+      });
     }
     res.status(200).json({
       success: true,
@@ -434,9 +727,11 @@ export const getMyStoreRaised = async (req, res, next) => {
     const sales = await
     findOrderPriceSum({ownerId: req.user.id});
     if (!sales) {
-      return errorResponse(res, {code: 401, message:
-                  // eslint-disable-next-line max-len
-                  'You do not have any orders yet.'});
+      return errorResponse(res, {
+        code: 401, message:
+          // eslint-disable-next-line max-len
+          'You do not have any orders yet.',
+      });
     }
     res.status(200).json({
       success: true,
@@ -462,9 +757,11 @@ export const getMyStoreRevenue = async (req, res, next) => {
     const sales = await
     findOrderTotalPriceSum({ownerId: req.user.id});
     if (!sales) {
-      return errorResponse(res, {code: 401, message:
-                  // eslint-disable-next-line max-len
-                  'You do not have any orders yet.'});
+      return errorResponse(res, {
+        code: 401, message:
+          // eslint-disable-next-line max-len
+          'You do not have any orders yet.',
+      });
     }
     res.status(200).json({
       success: true,
@@ -490,9 +787,11 @@ export const getStoreRaisedUser = async (req, res, next) => {
     const sales = await
     findOrderPriceSum({ownerId: req.params.ownerId});
     if (!sales) {
-      return errorResponse(res, {code: 401, message:
-                  // eslint-disable-next-line max-len
-                  'You do not have any orders yet.'});
+      return errorResponse(res, {
+        code: 401, message:
+          // eslint-disable-next-line max-len
+          'You do not have any orders yet.',
+      });
     }
     res.status(200).json({
       success: true,
@@ -518,8 +817,10 @@ export const getSingleStoreOrderDetails = async (req, res, next) => {
     const {count, rows} = await
     findOrdersAndCountBy({ownerId: req.params.ownerId});
     if (!rows) {
-      return errorResponse(res, {code: 401, message:
-      'This user does not have any orders yet.'});
+      return errorResponse(res, {
+        code: 401, message:
+          'This user does not have any orders yet.',
+      });
     }
     res.status(200).json({
       success: true,
@@ -544,12 +845,16 @@ export const getSingleStoreOrderDetails = async (req, res, next) => {
 export const getSingleStoreCustomerDetails = async (req, res, next) => {
   try {
     const {count, rows} = await
-    findOrdersAndCountBy({ownerId: req.params.ownerId, userId: {
-      [Op.not]: null,
-    }});
+    findOrdersAndCountBy({
+      ownerId: req.params.ownerId, userId: {
+        [Op.not]: null,
+      },
+    });
     if (!rows) {
-      return errorResponse(res, {code: 401, message:
-      'This user does not have any orders yet.'});
+      return errorResponse(res, {
+        code: 401, message:
+          'This user does not have any orders yet.',
+      });
     }
     res.status(200).json({
       success: true,
@@ -576,9 +881,11 @@ export const getOrderDetailsUser = async (req, res, next) => {
     const {count, rows} = await
     findOrdersAndCountBy({userId: req.params.userId});
     if (!rows) {
-      return errorResponse(res, {code: 401, message:
-      // eslint-disable-next-line max-len
-      'This user does not exist or is logged out. Please login or sign up.'});
+      return errorResponse(res, {
+        code: 401, message:
+          // eslint-disable-next-line max-len
+          'This user does not exist or is logged out. Please login or sign up.',
+      });
     }
     res.status(200).json({
       success: true,
@@ -588,5 +895,102 @@ export const getOrderDetailsUser = async (req, res, next) => {
     successResponse(res, {...orders}, 201);
   } catch (error) {
     errorResponse(res, {});
+  }
+};
+
+// Update wallet
+const updateWallet = async (userId, amount) => {
+  try {
+    // update wallet
+    const wallet = await findWalletBy({userId});
+    const newWallet = await wallet.increment(
+        'balance', {by: amount},
+    );
+    return newWallet;
+  } catch (error) {
+    console.log(error);
+    // errorResponse(res, {
+    //   message: error.message,
+    // });
+  }
+};
+
+// Create Wallet Transaction
+const createWalletTransaction =
+ async (userId, status, currency, amount)=> {
+   try {
+     const wallet = await findWalletBy({userId});
+     // create wallet transaction
+     const walletTransaction = await addWalletTransaction({
+       amount,
+       userId,
+       isInflow: true,
+       balanceBefore: Number(wallet.balance),
+       balanceAfter: Number(wallet.balance) + Number(amount),
+       currency,
+       status,
+     });
+     return walletTransaction;
+   } catch (error) {
+     console.log(error);
+     //  errorResponse(res, {
+     //    message: error.message,
+     //  });
+   }
+ };
+
+// Validating User wallet
+const validateUserWallet = async (userId) => {
+  try {
+    // check if user have a wallet, else create wallet
+    const userWallet = await findWalletBy({userId});
+
+    // If user wallet doesn't exist, create a new one
+    if (!userWallet) {
+      // create wallet
+      const wallet = await createWallet({
+        userId,
+      });
+      return wallet;
+    }
+    return userWallet;
+  } catch (error) {
+    errorResponse(res, {
+      message: error.message,
+    });
+  }
+};
+
+// Create Transaction
+const createTransaction = async (
+    userId,
+    id,
+    status,
+    currency,
+    amount,
+    customer,
+) => {
+  try {
+    const wallet = await findWalletBy({userId});
+    // create transaction
+    const transaction = await addTransaction({
+      userId,
+      transactionId: id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone_number,
+      amount,
+      currency,
+      balanceBefore: Number(wallet.balance),
+      balanceAfter: Number(wallet.balance) + Number(amount),
+      paymentStatus: status,
+      paymentGateway: 'flutterwave',
+    });
+    return transaction;
+  } catch (error) {
+    console.log(error);
+  // errorResponse(res, {
+  //   message: error.message,
+  // });
   }
 };

@@ -7,8 +7,8 @@ import {findBusinessBy, findUserBy,
 } from '../services';
 
 import {createProductReview, findProductReviewBy, findProductReviewsBy,
-  updateProductReviewBy,
   fetchAllProductReviews, deleteProductReview, findProductReviewsAndCountBy,
+  updateProductReviewBy, findProductBy,
   findProductReviewsRating} from '../services';
 
 
@@ -29,15 +29,20 @@ export const addProductReview = async (req, res) => {
       userId,
     } = req.body;
     const business = await findBusinessBy({userId});
+    const product = await findProductBy({id: productId});
     const user = await findUserBy({id: userId});
+    const owner = await findUserBy({id: product.userId});
     if (business) {
       const productReviewInfo = {
         comment,
         firstName: user.firstName,
         lastName: user.lastName,
         businessName: business.businessName,
+        productName: product.productTitle,
+        phoneNumber: user.phoneNumber,
         rating,
         productId,
+        ownerId: owner.Id,
         userId,
       };
       const review = await findProductReviewBy({productId, userId});
@@ -57,8 +62,11 @@ export const addProductReview = async (req, res) => {
         comment,
         firstName: user.firstName,
         lastName: user.lastName,
+        productName: product.productTitle,
+        phoneNumber: user.phoneNumber,
         rating,
         productId,
+        ownerId: owner.id,
         userId,
       };
       const review = await findProductReviewBy({productId, userId});
@@ -198,28 +206,6 @@ export const updateProductReviewProfile= async (req, res) => {
   }
 };
 
-/**
-       * Updates a productReview profile.
-       *
-
-       * @param {Request} req - The request from the endpoint.
-       * @param {Response} res - The response returned by the method.
-       * @return { JSON } A JSON response with the new productReview's
-       *  profile update.
-       * @memberof ProductReviewController
-       */
-// export const updateMyProductReviewProfile= async (req, res) => {
-//   try {
-// const productReview = await findProductReviewBy({userId: req.user.id});
-// const id = productReview.id;
-// const newProductReview = await updateProductReviewBy(req.body, {id});
-// const productReviewResponse = extractProductReviewData(newProductReview);
-// successResponse(res, productReviewResponse, 200);
-//   } catch (error) {
-// errorResponse(res, {code: error.statusCode, message: error.message});
-//   }
-// };
-
 
 /**
         * Deletes a productReview on a travel request.
@@ -295,3 +281,32 @@ export const getProductReviewDetailsUser = async (req, res, next) => {
   }
 };
 
+/**
+       *
+       *  Get profile details
+       * @static
+       * @param {Request} req - The request from the endpoint.
+       * @param {Response} res - The response returned by the method.
+       * @param {Response} next - The response returned by the method.
+       * @memberof Auth
+       */
+export const getMyStoreProductReviews = async (req, res, next) => {
+  try {
+    const {count, rows} = await
+    findProductReviewsBy({ownerId: req.user.id});
+    if (!rows) {
+      return errorResponse(res, {
+        code: 401, message:
+          'This user exists or is logged out. Please login or sign up.',
+      });
+    }
+    res.status(200).json({
+      success: true,
+      count,
+      rows,
+    });
+    // successResponse(res, {...productReviews}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};

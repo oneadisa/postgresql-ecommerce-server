@@ -13,7 +13,7 @@ router
     .get(getAllBusinesses);
 
 router.put('/me/update', protect, updateMyBusinessProfile);
-router.get('/me', protect, getMyBusinessDetails);
+router.get('/me/:userId', protect, getMyBusinessDetails);
 router.delete('/me/delete', protect, deleteMyBusinessAccount);
 
 router.get('/admin/profile/:businessId', businessProfile);

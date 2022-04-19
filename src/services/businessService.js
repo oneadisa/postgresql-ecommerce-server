@@ -1,4 +1,4 @@
-import {findUserBy} from './';
+// import {findBusinessBy} from './';
 import db from '../database/models';
 import ApiError from '../utils/apiError';
 
@@ -11,8 +11,8 @@ const {Business} = db;
  * @return {Promise<Business>} A promise object with business detail.
  */
 export const createBusiness = async (business) => {
-  const user = findUserBy({id: business.userId});
-  if (!user) throw new ApiError(404, `User with id: ${id} does not exist`);
+  const user = findBusinessBy({id: business.userId});
+  if (!user) throw new ApiError(404, `Business with id: ${id} does not exist`);
   const newBusiness = await Business.create(business);
 
   return newBusiness.dataValues;
@@ -34,6 +34,17 @@ export const updateBusinessById = async (businessData, id) => {
   }
 
   return await business.update(businessData);
+};
+
+/**
+ * Fetches all businesses
+ * @return {Promise<array>} - An instance of notification
+ *  table including it's relationships.
+ * @memberof BusinessService
+ */
+export const fetchAllBusinessess = async () => {
+  const businesses = await Business.findAll({});
+  return businesses;
 };
 
 /**

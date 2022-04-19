@@ -2,7 +2,7 @@ import {successResponse, errorResponse,
   extractStoreData} from '../utils/helpers';
 import {findBusinessBy} from '../services';
 
-import {createStore, findStoreBy, updateStoreBy,
+import {createStore, findStoreBy, updateStoreBy, findProductsBy,
   fetchAllStores, deleteStore} from '../services';
 
 
@@ -107,9 +107,20 @@ export const getStoreDetails = async (req, res) => {
  */
 export const getStoreProducts = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.params.storeId;
     const store = await findStoreBy({id});
-    // const userResponse = extractUserData(user);
+    const {count, rows} = await findProductsBy({storeId: store.id});
+    if (!rows) {
+      return errorResponse(res, {
+        code: 401, message:
+          'This store does not exist.',
+      });
+    }
+    res.status(200).json({
+      success: true,
+      count,
+      rows,
+    });
     successResponse(res, store, 200);
   } catch (error) {
     errorResponse(res, {code: error.statusCode, message: error.message});
@@ -251,3 +262,4 @@ export const getStoreDetailsUser = async (req, res, next) => {
     errorResponse(res, {});
   }
 };
+

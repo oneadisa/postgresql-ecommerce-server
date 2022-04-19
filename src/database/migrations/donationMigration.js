@@ -48,6 +48,18 @@ module.exports = {
         allowNull: false,
         defaultValue: 0,
       },
+      campaignName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      ownerLogo: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      investorBrief: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       firstPaymentDate: {
         type: Sequelize.DATE,
         allowNull: false,

@@ -150,9 +150,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    duration: {type: DataTypes.INTEGER,
+    duration: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 0},
+      defaultValue: 0,
+    },
     goLiveSchedule: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -191,6 +193,28 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    twitter: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue:
+        'https://twitter.com',
+      validate: {
+        isUrl: true,
+      },
+    },
+    facebook: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue:
+        'https://facebook.com',
+      validate: {
+        isUrl: true,
+      },
+    },
+    whatsapp: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     business: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -214,6 +238,13 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: 'CASCADE',
     });
     Campaign.hasMany(models.CampaignReview, {
+      foreignKey: {
+        name: 'campaignId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
+    Campaign.hasMany(models.Payout, {
       foreignKey: {
         name: 'campaignId',
       },

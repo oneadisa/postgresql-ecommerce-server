@@ -33,7 +33,7 @@ export const comparePassword = async (password, hash) => {
  * @return {string} JWT token.
  */
 export const generateToken = (payLoad, expiresIn = '1d') => {
-  return jwt.sign(payLoad, ''+ process.env.SECRET, {expiresIn});
+  return jwt.sign(payLoad, '' + process.env.SECRET, {expiresIn});
 };
 
 /**
@@ -93,11 +93,11 @@ export const errorResponse = (res,
  * @memberof Helpers
  * @return {string} JWT token.
  */
-export const generateTokenOnSignup =(letterIdentifier, id) => {
+export const generateTokenOnSignup = (letterIdentifier, id) => {
   const randomNumber = Math.floor(Math.random() * 8999 + 1000);
   const anotherRandomNumber = Math.floor(Math.random() * 8999 + 1000);
   const token =
-   `${letterIdentifier}.${id}.${randomNumber}@${anotherRandomNumber}`;
+    `${letterIdentifier}.${id}.${randomNumber}@${anotherRandomNumber}`;
   return token;
 };
 
@@ -107,7 +107,7 @@ export const generateTokenOnSignup =(letterIdentifier, id) => {
 * @memberof Helpers
 * @return {Token} Token
 */
-export const checkToken= async (req) => {
+export const checkToken = async (req) => {
   const {
     headers: {authorization},
     cookies: {token: cookieToken},
@@ -118,7 +118,7 @@ export const checkToken= async (req) => {
       authorization.split(' ')[1] : authorization;
   }
   return cookieToken || bearerToken || req.headers['x-access-token'] ||
-   req.headers.token || req.body.token;
+    req.headers.token || req.body.token;
 };
 
 /**
@@ -148,11 +148,11 @@ export const verifyToken = (token) => {
    * @memberof Helpers
    * @return {URL} - Verification link.
    */
-export const generateVerificationLink = (req, {id, email, role}) =>{
+export const generateVerificationLink = (req, {id, email, role}) => {
   const token = generateToken({id, email, role});
   // eslint-disable-next-line max-len
   const host = req.hostname === 'localhost' ? `${req.hostname}:${process.env.PORT}` :
-  req.hostname;
+    req.hostname;
   return `${req.protocol}://${host}/api/auth/verify?token=${token}`;
 };
 
@@ -225,6 +225,7 @@ export const extractStoreData = (store) => {
     category: store.category,
     storeLogo: store.storeLogo,
     storeBackground: store.storeBackground,
+    deliveryPrice: store.deliveryPrice,
     businessId: store.businessId,
     userId: store.userId,
     createdAt: store.createdAt,
@@ -239,19 +240,19 @@ export const extractStoreData = (store) => {
 * @memberof Helpers
 * @return { object } - The new extracted user object.
 */
-export const extractProductData = (product) =>{
+export const extractProductData = (product) => {
   return {
     productTitle: product.productTitle,
-    shortDescription: product. shortDescription,
-    productDetails: product. productDetails,
-    discountedPrice: product. discountedPrice,
-    price: product. price,
-    productUnitCount: product. productUnitCount,
+    shortDescription: product.shortDescription,
+    productDetails: product.productDetails,
+    discountedPrice: product.discountedPrice,
+    price: product.price,
+    productUnitCount: product.productUnitCount,
     deliveryPrice: product.deliveryPrice,
-    numberOfReviews: product. numberOfReviews,
+    numberOfReviews: product.numberOfReviews,
     ratings: product.ratings,
-    category: product. category,
-    storeId: product. storeId,
+    category: product.category,
+    storeId: product.storeId,
     userId: product.userId,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
@@ -266,15 +267,16 @@ export const extractProductData = (product) =>{
 * @memberof Helpers
 * @return { object } - The new extracted user object.
 */
-export const extractProductReviewData = (productReview) =>{
+export const extractProductReviewData = (productReview) => {
   return {
     comment: productReview.comment,
     firstName: productReview.firstName,
     lastName: productReview.lastName,
     businessName: productReview.businessName,
     rating: productReview.rating,
-    productId: productReview. productId,
+    productId: productReview.productId,
     userId: productReview.userId,
+    ownerId: productReview.ownerId,
     createdAt: productReview.createdAt,
     updatedAt: productReview.updatedAt,
   };
@@ -287,7 +289,7 @@ export const extractProductReviewData = (productReview) =>{
 * @memberof Helpers
 * @return { object } - The new extracted user object.
 */
-export const extractOrderData = (order) =>{
+export const extractOrderData = (order) => {
   return {
     address: order.address,
     city: order.city,
@@ -295,6 +297,7 @@ export const extractOrderData = (order) =>{
     country: order.country,
     pinCode: order.pinCode,
     phoneNumber: order.phoneNumber,
+    email: order.email,
     productName: order.productName,
     price: order.price,
     quantity: order.quantity,
@@ -328,7 +331,7 @@ export const extractOrderData = (order) =>{
 * @memberof Helpers
 * @return { object } - The new extracted user object.
 */
-export const extractCampaignData = (campaign) =>{
+export const extractCampaignData = (campaign) => {
   return {
     campaignName: campaign.campaignName,
     natureOfBusiness: campaign.natureOfBusiness,
@@ -342,7 +345,7 @@ export const extractCampaignData = (campaign) =>{
     pitchDeck: campaign.pitchDeck,
     idealTargetAudienceAge: campaign.idealTargetAudienceAge,
     idealTargetAudienceHealthIssuesOrDisabilities:
-     campaign.idealTargetAudienceHealthIssuesOrDisabilities,
+      campaign.idealTargetAudienceHealthIssuesOrDisabilities,
     gender: campaign.gender,
     ownerLogo: campaign.ownerLogo,
     fundingType: campaign.fundingType,
@@ -370,6 +373,9 @@ export const extractCampaignData = (campaign) =>{
     firstPaymentDate: campaign.firstPaymentDate,
     firstPaymentDateString: campaign.firstPaymentDateString,
     endDateString: campaign.endDateString,
+    twitter: campaign.twitter,
+    facebook: campaign.facebook,
+    whatsApp: campaign.whatsApp,
     business: campaign.business,
     userId: campaign.userId,
     createdAt: campaign.createdAt,
@@ -385,7 +391,7 @@ export const extractCampaignData = (campaign) =>{
 * @memberof Helpers
 * @return { object } - The new extracted user object.
 */
-export const extractCampaignReviewData = (campaignReview) =>{
+export const extractCampaignReviewData = (campaignReview) => {
   return {
     comment: campaignReview.comment,
     firstName: campaignReview.firstName,
@@ -405,7 +411,7 @@ export const extractCampaignReviewData = (campaignReview) =>{
 * @memberof Helpers
 * @return { object } - The new extracted user object.
 */
-export const extractDonationData = (donation) =>{
+export const extractDonationData = (donation) => {
   return {
     amount: donation.amount,
     firstName: donation.firstName,
@@ -416,7 +422,10 @@ export const extractDonationData = (donation) =>{
     amountAlreadyRepaid: donation.amountAlreadyRepaid,
     firstPaymentDate: donation.firstPaymentDate,
     lastPaymentDate: donation.lastPaymentDate,
-    campaignId: donation. campaignId,
+    campaignId: donation.campaignId,
+    campaignName: donation.campaignName,
+    ownerLogo: donation.ownerLogo,
+    investorBrief: donation.investorBrief,
     userId: donation.userId,
     createdAt: donation.createdAt,
     updatedAt: donation.updatedAt,
@@ -430,7 +439,7 @@ export const extractDonationData = (donation) =>{
 * @memberof Helpers
 * @return { object } - The new extracted user object.
 */
-export const extractProductImageData = (productImage) =>{
+export const extractProductImageData = (productImage) => {
   return {
     publicId: productImage.publicId,
     url: productImage.url,
@@ -440,3 +449,50 @@ export const extractProductImageData = (productImage) =>{
     updatedAt: productImage.updatedAt,
   };
 };
+
+
+/**
+* Extracts a new product Image object from the one supplied
+* @param {object} wallet - The user data from which a new product Image
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractWalletData = (wallet) => {
+  return {
+    userId: wallet.userId,
+    balance: wallet.balance,
+    createdAt: wallet.createdAt,
+    updatedAt: wallet.updatedAt,
+  };
+};
+
+
+/**
+* Extracts a new payout object from the one supplied
+* @param {object} payout - The user data from which a new payout
+ object will be extracted.
+* @memberof Helpers
+* @return { object } - The new extracted user object.
+*/
+export const extractPayoutData = (payout) => {
+  return {
+    amount: payout.amount,
+    firstName: payout.firstName,
+    lastName: payout.lastName,
+    businessName: payout.businessName,
+    amountToBeRepaid: payout.amountToBeRepaid,
+    amountToBeRepaidPerTime: payout.amountToBeRepaidPerTime,
+    amountAlreadyRepaid: payout.amountAlreadyRepaid,
+    firstPaymentDate: payout.firstPaymentDate,
+    lastPaymentDate: payout.lastPaymentDate,
+    campaignId: payout.campaignId,
+    campaignName: payout.campaignName,
+    ownerLogo: payout.ownerLogo,
+    investorBrief: payout.investorBrief,
+    userId: payout.userId,
+    createdAt: payout.createdAt,
+    updatedAt: payout.updatedAt,
+  };
+};
+

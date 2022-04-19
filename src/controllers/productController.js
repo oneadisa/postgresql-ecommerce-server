@@ -1,9 +1,11 @@
 import {successResponse, errorResponse,
   extractProductData} from '../utils/helpers';
 import {findStoreBy} from '../services';
-
+import cloudinary from 'cloudinary';
 import {createProduct, findProductBy, updateProductBy,
-  fetchAllProducts, deleteProduct, findProductsBy} from '../services';
+  fetchAllProducts, deleteProduct, findProductsBy,
+  findProductImagesAndCountBy, createProductImage,
+} from '../services';
 
 
 /**
@@ -39,7 +41,48 @@ export const addProduct = async (req, res) => {
       userId,
     };
     const product = await createProduct(productInfo);
-    successResponse(res, {...product}, 201);
+    let images = [];
+    if (typeof req.body.images === 'string') {
+      images.push(req.body.images);
+    } else {
+      images = req.body.images;
+    }
+    const imagesLinks = [];
+    for (let i = 0; i < images.length; i++) {
+      const result = await cloudinary.v2.uploader.upload(images[i], {
+        folder: 'products',
+      });
+      imagesLinks.push({
+        publicId: result.public_id,
+        url: result.secure_url,
+      });
+    }
+    for (let i = 0; i < imagesLinks.length; i++) {
+      const {publicId, url} = imagesLinks[i];
+      const productImageInfo = {
+        publicId,
+        url,
+        productId: product.id,
+        userId,
+      };
+      await createProductImage(productImageInfo);
+      // await createProductImage(imagesLinks[i], product.id,
+      // userId );
+    }
+    const {count, rows} = await
+    findProductImagesAndCountBy({productId: product.id});
+    req.body.images = imagesLinks;
+    req.body.user = req.user.id;
+    // const product = await Product.create(req.body);
+    // successResponse(res, {...product}, 201);
+    res.status(200).json({
+      success: true,
+      product,
+      productImages: {
+        count,
+        rows,
+      },
+    });
   } catch (error) {
     errorResponse(res, {
       code: error.statusCode,
@@ -258,3 +301,32 @@ export const getProductDetailsUser = async (req, res, next) => {
     errorResponse(res, {});
   }
 };
+
+/**
+     *
+     *  Get profile details
+     * @static
+     * @param {Request} req - The request from the endpoint.
+     * @param {Response} res - The response returned by the method.
+     * @param {Response} next - The response returned by the method.
+     * @memberof Auth
+     */
+export const getProductStore = async (req, res, next) => {
+  try {
+    const products = await findProductsBy({userId: req.params.userId});
+    if (!products) {
+      return errorResponse(res, {
+        code: 401, message:
+          'This user exists or is logged out. Please login or sign up.',
+      });
+    }
+    res.status(200).json({
+      success: true,
+      products,
+    });
+    successResponse(res, {...products}, 201);
+  } catch (error) {
+    errorResponse(res, {});
+  }
+};
+

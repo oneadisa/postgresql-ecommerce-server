@@ -34,6 +34,13 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      formCO7: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        validate: {
+          isUrl: true,
+        },
+      },
       userId: {
         type: Sequelize.INTEGER,
         allowNull: false,

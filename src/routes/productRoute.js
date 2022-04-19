@@ -3,6 +3,7 @@ import {
   deleteProductAction, updateProductProfile, addProduct,
   getMyProductDetails, getProductDetails, getAllProducts,
   updateMyProductProfile, getProductDetailsUser,
+  getProductStore,
 } from '../controllers';
 import {protect, onProductCreation} from '../middlewares';
 
@@ -20,6 +21,7 @@ router.get('/me', protect, getMyProductDetails);
 router.get('/me/profile/:userId', protect, getProductDetailsUser);
 
 router.get('/one/profile/:productId', getProductDetails);
+router.get('/one/store/:productId', getProductStore);
 router.put('/one/update/:productId', updateProductProfile);
 router.delete('/one/delete/:productId', protect, deleteProductAction);
 
