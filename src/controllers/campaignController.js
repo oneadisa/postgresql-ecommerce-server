@@ -330,7 +330,7 @@ export const getCampaignDetailsUser = async (req, res, next) => {
 
 // Do this instead
 setTimeout(function() {
-  console.log('Hello World!');
+  console.log(`You got this! Let's get it!`);
 }, 500);
 
 // let counter = 1;
@@ -344,15 +344,15 @@ setTimeout(function() {
 //
 // triggerPayout();
 
-let counter = 1;
-
-const triggerPayout = () => setTimeout(newPayout = ()=> {
-  console.log('Run No. ' +counter);
-  if (counter < 5) {
-    counter++;
-    setTimeout(newPayout, 2000);
-  }
-}, 5000);
-
-
-triggerPayout();
+// let counter = 1;
+//
+// const triggerPayout = () => setTimeout(newPayout = ()=> {
+// console.log('Run No. ' +counter);
+// if (counter < 5) {
+// counter++;
+// setTimeout(newPayout, 2000);
+// }
+// }, 5000);
+//
+//
+// triggerPayout();

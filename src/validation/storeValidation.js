@@ -26,6 +26,7 @@ export const validateStore = async (store) => {
     storeLogo: Joi.string(),
     storeBackground: Joi.string(),
     businessId: Joi.number(),
+    deliveryPrice: Joi.number(),
     userId: Joi.number(),
   });
   const {error} = await schema.validateAsync(store);

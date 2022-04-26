@@ -14,6 +14,8 @@ import {
 } from '../services';
 const {creditRepaymentAccount, debitRepaymentAccount, debitAccount, creditAccount} = require( '../utils/transfer');
 const {v4} = require('uuid');
+// const path = require('path');
+import axios from 'axios';
 
 /**
            * Creates a new Donation from Payment portal.
@@ -118,7 +120,7 @@ export const addDonationCash = async (req, res) => {
       // check if user have a wallet, else create wallet
       await validateUserWallet(recipient.id);
       // create wallet transaction
-      await createWalletTransaction(recipient.id, status, currency, amount);
+      const walletTransaction = await createWalletTransaction(recipient.id, status, currency, amount);
       // create transaction
       await createTransaction(recipient.id, id, status, currency, amount, customer);
       await updateWallet(recipient.id, amount);
@@ -126,27 +128,33 @@ export const addDonationCash = async (req, res) => {
       let counter = 1;
       const payoutDelay = campaign.endDate - new Date().getTime();
 
-      const triggerPayout = () => setTimeout(newPayout = async ()=> {
+      const newPayout = async () => {
         const reference = v4();
         const summary = 'Loan Repayment';
         // check if owner has a wallet, else create wallet
         await validateUserWallet(userId);
         await Promise.all([
           debitRepaymentAccount(
-              {amountPerTime, userId: recipient.id, purpose: 'Repayment to investor', reference, summary,
-                trnxSummary: `TRFR TO: ${userId}. TRNX REF:${reference} `}),
+              {
+                amountPerTime, userId: recipient.id, purpose: 'Repayment to investor', reference, summary,
+                trnxSummary: `TRFR TO: ${userId}. TRNX REF:${reference} `,
+              }),
           creditRepaymentAccount(
-              {amountPerTime, userId: userId, purpose: `Return on investment in ${campaign.campaignName}`, reference, summary,
-                trnxSummary: `TRFR FROM: ${recipient.id}. TRNX REF:${reference} `}),
+              {
+                amountPerTime, userId: userId, purpose: `Return on investment in ${campaign.campaignName}`, reference, summary,
+                trnxSummary: `TRFR FROM: ${recipient.id}. TRNX REF:${reference} `,
+              }),
         ]);
         createPayout(payoutInfo);
-        console.log('Payout number ' +counter);
+        console.log('Payout number ' + counter);
         if (counter < numberOfRepayments) {
           counter++;
           setTimeout(newPayout, campaign.timePerPayment);
         }
-      }, payoutDelay);
-
+      };
+      const triggerPayout = () => setTimeout(
+          newPayout
+          , payoutDelay);
       await triggerPayout();
       res.status(200).json({
         success: true,
@@ -195,14 +203,15 @@ export const addDonationCash = async (req, res) => {
       // check if user have a wallet, else create wallet
       await validateUserWallet(recipient.id);
       // create wallet transaction
-      await createWalletTransaction(recipient.id, status, currency, amount);
+      const walletTransaction = await createWalletTransaction(recipient.id, status, currency, amount);
       // create transaction
       await createTransaction(recipient.id, id, status, currency, amount, customer);
       await updateWallet(recipient.id, amount);
       const donation = await createDonation(donationInfo);
       let counter = 1;
       const payoutDelay = campaign.endDate - new Date().getTime();
-      const triggerPayout = () => setTimeout(newPayout = async ()=> {
+
+      const newPayout = async ()=> {
         const reference = v4();
         const summary = 'Loan Repayment';
         // check if owner has a wallet, else create wallet
@@ -221,7 +230,10 @@ export const addDonationCash = async (req, res) => {
           counter++;
           setTimeout(newPayout, campaign.timePerPayment);
         }
-      }, payoutDelay);
+      };
+
+      const triggerPayout = () => setTimeout( newPayout
+          , payoutDelay);
       await triggerPayout();
       res.status(200).json({
         success: true,
@@ -315,7 +327,7 @@ export const addDonationWallet = async (req, res) => {
       };
       const reference = v4();
       const summary = `Investment in ${campaign.campaignName}`;
-      await Promise.all([
+      const transfer = await Promise.all([
         debitAccount(
             {amount, userId: userId, purpose: `Investment in ${campaign.campaignName}`, reference, summary,
               trnxSummary: `TRFR TO: ${recipient.id}. TRNX REF:${reference} `}),
@@ -327,32 +339,40 @@ export const addDonationWallet = async (req, res) => {
       let counter = 1;
       const payoutDelay = campaign.endDate - new Date().getTime();
 
-      const triggerPayout = () => setTimeout(newPayout = async ()=> {
+      const newPayout = async () => {
         const reference = v4();
         const summary = 'Loan Repayment';
         // check if owner has a wallet, else create wallet
         await validateUserWallet(userId);
         await Promise.all([
           debitRepaymentAccount(
-              {amountPerTime, userId: recipient.id, purpose: 'Repayment to investor', reference, summary,
-                trnxSummary: `TRFR TO: ${userId}. TRNX REF:${reference} `}),
+              {
+                amountPerTime, userId: recipient.id, purpose: 'Repayment to investor', reference, summary,
+                trnxSummary: `TRFR TO: ${userId}. TRNX REF:${reference} `,
+              }),
           creditRepaymentAccount(
-              {amountPerTime, userId: userId, purpose: `Return on investment in ${campaign.campaignName}`, reference, summary,
-                trnxSummary: `TRFR FROM: ${recipient.id}. TRNX REF:${reference} `}),
+              {
+                amountPerTime, userId: userId, purpose: `Return on investment in ${campaign.campaignName}`, reference, summary,
+                trnxSummary: `TRFR FROM: ${recipient.id}. TRNX REF:${reference} `,
+              }),
         ]);
         createPayout(payoutInfo);
-        console.log('Payout number ' +counter);
+        console.log('Payout number ' + counter);
         if (counter < numberOfRepayments) {
           counter++;
           setTimeout(newPayout, campaign.timePerPayment);
         }
-      }, payoutDelay);
+      };
+
+      const triggerPayout = () => setTimeout(
+          newPayout
+          , payoutDelay);
 
       await triggerPayout();
       res.status(200).json({
         success: true,
         donation,
-        walletTransaction,
+        transfer,
       });
       // successResponse(res, {...donation}, 201);
     } else {
@@ -393,7 +413,7 @@ export const addDonationWallet = async (req, res) => {
       };
       const reference = v4();
       const summary = `Investment in ${campaign.campaignName}`;
-      await Promise.all([
+      const transfer = await Promise.all([
         debitAccount(
             {amount, userId: userId, purpose: `Investment in ${campaign.campaignName}`, reference, summary,
               trnxSummary: `TRFR TO: ${recipient.id}. TRNX REF:${reference} `}),
@@ -404,7 +424,8 @@ export const addDonationWallet = async (req, res) => {
       const donation = await createDonation(donationInfo);
       let counter = 1;
       const payoutDelay = campaign.endDate - new Date().getTime();
-      const triggerPayout = () => setTimeout(newPayout = async ()=> {
+
+      const newPayout = async ()=> {
         const reference = v4();
         const summary = 'Loan Repayment';
         // check if owner has a wallet, else create wallet
@@ -423,12 +444,15 @@ export const addDonationWallet = async (req, res) => {
           counter++;
           setTimeout(newPayout, campaign.timePerPayment);
         }
-      }, payoutDelay);
+      };
+
+      const triggerPayout = () => setTimeout( newPayout
+          , payoutDelay);
       await triggerPayout();
       res.status(200).json({
         success: true,
         donation,
-        walletTransaction,
+        transfer,
       });
     }
   } catch (error) {
@@ -976,3 +1000,18 @@ const createTransaction = async (
   // });
   }
 };
+
+
+// let counter = 1;
+
+// const newPayout = ()=> {
+// console.log('Run No. ' +counter);
+// if (counter < 5) {
+// counter++;
+// setTimeout(newPayout, 2000);
+// }
+// }
+
+// const triggerPayout = () => setTimeout(newPayout, 5000);
+// triggerPayout();
+

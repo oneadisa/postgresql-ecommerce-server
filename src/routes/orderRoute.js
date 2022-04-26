@@ -3,7 +3,7 @@ import {
   deleteOrderAction, updateOrderProfile, addCashOrder,
   getMyOrderDetails, getOrderDetails, getAllOrders, addWalletOrder,
   getOrdersProduct, getMyStoreOrderDetails, getMyStoreCustomerDetails,
-  getSingleStoreOrderDetails, getOrderDetailsUser,
+  getSingleStoreOrderDetails, getOrderDetailsUser, addCashOrderCallback,
   getSingleStoreCustomerDetails, getMyStoreRaised, getStoreRaisedUser,
   getMyStoreRevenue,
 } from '../controllers';
@@ -16,8 +16,11 @@ router.route('/all').get(getAllOrders);
 
 router
     .route('/create')
-    .post(onOrderCreation, addCashOrder);
-router.post('/create/wallet', addWalletOrder);
+    .get(addCashOrder);
+router
+    .route('/create/callback')
+    .get(addCashOrderCallback);
+router.post('/create/wallet', onOrderCreation, addWalletOrder);
 
 router.get('/me', protect, getMyOrderDetails);
 router.get('/me/profile/:userId', protect, getOrderDetailsUser);

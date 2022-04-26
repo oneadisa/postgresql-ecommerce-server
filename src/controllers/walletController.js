@@ -11,8 +11,9 @@ import db from '../database/models';
 const {Wallet} = db;
 const {creditAccount, debitAccount} = require( '../utils/transfer');
 const {v4} = require('uuid');
-const path = require('path');
+// const path = require('path');
 import axios from 'axios';
+// import got from 'got';
 require('dotenv').config();
 
 
@@ -51,6 +52,53 @@ export const walletBalance = async (req, res, next) => {
 };
 
 /**
+ * Get Wallet balance
+ *
+ * @param {Request} req The request from the endpoint.
+ * @param {Response} res The response returned by the method.
+ * @param {Response} next The response returned by the method.
+ * @memberof WalletController
+ * @return {JSON} A JSON response with the registered
+ *  wallet's details and a JWT.
+ */
+export const fw = async (req, res, next) => {
+  try {
+    const response = await got.post('https://api.flutterwave.com/v3/payments', {
+      headers: {
+        Authorization: `Bearer ${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
+      },
+      json: {
+        tx_ref: 'hooli-tx-1920bbtytty',
+        amount: '100',
+        currency: 'NGN',
+        redirect_url: 'https://webhook.site/9d0b00ba-9a69-44fa-a43d-a82c33c36fdc',
+        meta: {
+          consumer_id: 23,
+          consumer_mac: '92a3-912ba-1192a',
+        },
+        customer: {
+          email: 'user@gmail.com',
+          phonenumber: '080****4528',
+          name: 'Yemi Desola',
+        },
+        customizations: {
+          title: 'Pied Piper Payments',
+          logo: 'http://www.piedpiper.com/app/themes/joystick-v27/images/logo.png',
+        },
+      },
+    }).json();
+    console.log(response);
+    return successResponse(res, {...response}, 201);
+  } catch (err) {
+    console.log(err.code);
+    console.log(err.response.body);
+    errorResponse(res, {
+      message: err.message,
+    });
+  }
+};
+
+/**
  * Payment controller
  *
  * @param {Request} req The request from the endpoint.
@@ -62,11 +110,53 @@ export const walletBalance = async (req, res, next) => {
  */
 export const fund = async (req, res, next) => {
   try {
-    res.sendFile(path.join(__dirname + '../../../flutter.html'));
+    // res.sendFile(path.join(__dirname + '../../../flutter.html'));
     // __dirname : It will resolve to your project folder.
-  } catch (error) {
+    const {
+      amount,
+      userId,
+    } = req.body;
+    const user = await findUserBy({id: userId});
+    console.log(user);
+    const fundData = ({
+      'tx_ref': Date.now(),
+      'amount': amount,
+      'currency': 'NGN',
+      'redirect_url': 'http://localhost:8080/api/wallet/fund/response',
+      'meta': {
+        'consumer_id': user.id,
+        'consumer_mac': '92a3-912ba-1192a',
+      },
+      'customer': {
+        'email': user.email,
+        'phone_number': user.phoneNumber,
+        'name': user.firstName+' '+user.lastName,
+      },
+      'customizations': {
+        'title': 'Gaged Payments',
+        'logo': 'https://www.linkpicture.com/q/Gaged-Blue.svg',
+      },
+    });
+    console.log(fundData);
+    const config = {
+      method: 'post',
+      url: 'https://api.flutterwave.com/v3/payments',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
+      },
+      data: fundData,
+    };
+
+    const preResponse = await axios(config);
+    console.log(preResponse);
+    const response = preResponse.data;
+    res.redirect(response.data.link);
+    return successResponse(res, {...response}, 201);
+  } catch (err) {
     errorResponse(res, {
-      message: error.message,
+      message: err.message,
     });
   }
 };
@@ -95,34 +185,56 @@ export const withdraw = async (req, res) => {
       email,
     } = req.body;
 
-    const transferData = {
-      account_bank,
-      account_number,
-      amount,
-      narration,
-      currency,
-      reference,
-      callback_url,
-      debit_currency,
-      meta: {
-        email,
-        mobile_number: phoneNumber,
+    const transferData = JSON.stringify({
+      'account_bank': account_bank,
+      'account_number': account_number,
+      'amount': amount,
+      'narration': narration,
+      'currency': currency,
+      'reference': reference,
+      'callback_url': callback_url,
+      'debit_currency': debit_currency,
+      'meta': {
+        'email': email,
+        'mobile_number': phoneNumber,
       },
-    };
+    });
+    console.log(transferData);
+    // const config = {
+    // headers: {
+    // 'Content-Type': 'application/json',
+    // 'Accept': 'application/json',
+    // 'Authorization': `${process.env.FLUTTERWAVE_V3_SECRET_LIVE_KEY}`,
+    // },
+    // };
+
+    // const baseURL = 'https://api.flutterwave.com/v3/transfers';
     const config = {
+      method: 'post',
+      url: 'https://api.flutterwave.com/v3/transfers',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
+        'Authorization': `Bearer ${process.env.FLUTTERWAVE_V3_SECRET_LIVE_KEY}`,
       },
+      data: transferData,
     };
-    const data = await axios.post(
-        'https://api.flutterwave.com/v3/transfers',
-        transferData,
-        config,
-    );
 
-    console.log(data);
+    // const example = await axios({
+    // method: 'post',
+    // url: '/user/12345',
+    // data: {
+    // firstName: 'Fred',
+    // lastName: 'Flintstone',
+    // },
+    // });
+    const preResponse = await axios(config);
+    console.log(preResponse);
+    const response = preResponse.data;
+    return successResponse(res, {...response}, 201);
+    // return res.status(200).json({
+    // response,
+    // });
   } catch (error) {
     errorResponse(res, {
       message: error.message,
@@ -176,19 +288,21 @@ export const getFundResponse = async (req, res, next) => {
     const user = await findUserBy({email: customer.email});
 
     // check if user have a wallet, else create wallet
-    const wallet = await validateUserWallet(user.id);
+    await validateUserWallet(user.id);
 
     // create wallet transaction
-    await createWalletTransaction(user.id, status, currency, amount);
+    const walletTransaction = await createWalletTransaction(user.id, status, currency, amount);
 
     // create transaction
-    await createTransaction(user.id, id, status, currency, amount, customer);
+    const transaction = await createTransaction(user.id, id, status, currency, amount, customer);
 
-    await updateWallet(user.id, amount);
+    const wallet = await updateWallet(user.id, amount);
 
     return res.status(200).json({
       response: 'wallet funded successfully',
       data: wallet,
+      walletTransaction,
+      transaction,
     });
 
     // successResponse(res, {...wallets}, 201);
@@ -211,27 +325,28 @@ export const getFundResponse = async (req, res, next) => {
  */
 export const getWithdrawResponse = async (req, res, next) => {
   try {
-    const {transaction_id} = req.query;
+    // const {transaction_id} = req.query;
 
     // URL with transaction ID of which will be used to confirm
     //  transaction status
-    const url = `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`;
+    // const url = `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`;
 
     // Network call to confirm transaction status
-    const response = await axios({
-      url,
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
-      },
-    });
+    // const response = await axios({
+    // url,
+    // method: 'post',
+    // headers: {
+    // 'Content-Type': 'application/json',
+    // 'Accept': 'application/json',
+    // 'Authorization': `${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
+    // },
+    // });
+    const response = req.body;
 
-    console.log(response.data.data);
+    console.log(response);
 
-    const {currency, id, amount, meta} = response.data.data;
-    const {status} = response.data.data;
+    const {currency, id, amount, meta} = response.data;
+    const {status} = response.data;
 
     // check if transaction id already exist
     const transactionExist = await findTransactionBy({transactionId: id});
@@ -256,16 +371,18 @@ export const getWithdrawResponse = async (req, res, next) => {
     }
 
     // create wallet transaction
-    await createDebitWalletTransaction(user.id, status, currency, amount);
+    const debitWalletTransaction = await createDebitWalletTransaction(user.id, status, currency, amount);
 
     // create transaction
-    await createDebitTransaction(user.id, id, status, currency, amount, customer);
+    const debitTransaction = await createDebitTransaction(user.id, id, status, currency, amount, user);
 
-    await deductWallet(user.id, amount);
+    const walletNew = await deductWallet(user.id, amount);
 
     return res.status(200).json({
-      response: 'wallet funded successfully',
-      data: wallet,
+      response: 'wallet debited successfully',
+      data: walletNew,
+      debitWalletTransaction,
+      debitTransaction,
     });
 
     // successResponse(res, {...wallets}, 201);
@@ -508,7 +625,7 @@ const createWalletTransaction =
        userId,
        isInflow: true,
        balanceBefore: Number(wallet.balance),
-       balanceAfter: Number(wallet.balance) - Number(amount),
+       balanceAfter: Number(wallet.balance) + Number(amount),
        currency,
        status,
      });
@@ -563,7 +680,7 @@ const createTransaction = async (
       transactionId: id,
       name: customer.name,
       email: customer.email,
-      phone: customer.phone_number,
+      phone: customer.phoneNumber,
       amount,
       currency,
       balanceBefore: Number(wallet.balance),
@@ -595,9 +712,9 @@ const createDebitTransaction = async (
     const transaction = await addTransaction({
       userId,
       transactionId: id,
-      name: customer.name,
+      name: customer.firstName+' '+customer.lastName,
       email: customer.email,
-      phone: customer.phone_number,
+      phone: customer.phoneNumber,
       amount,
       currency,
       balanceBefore: Number(wallet.balance),

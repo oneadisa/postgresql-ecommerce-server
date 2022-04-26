@@ -74,11 +74,11 @@ export const findPayoutsSum = async (options) => {
    * @return {Promise<object>} A promise object with user detail.
    * @memberof PayoutService
    */
-export const findDebtSum = async (options) => {
-  const amount = await Payout.sum('amountToBeRepaid', {where: options});
-
-  return amount;
-};
+// export const findDebtSum = async (options) => {
+// const amount = await Payout.sum('amountToBeRepaid', {where: options});
+//
+// return amount;
+// };
 
 
 /**
@@ -127,6 +127,6 @@ export const updatePayoutBy = async (newValues, obj) => {
  * to the newly created payout.
  * @memberof PayoutService
  */
-export const deletePayoutById= (donationId) => {
+export const deletePayoutById = (donationId) => {
   return Payout.destroy({where: {id: donationId}});
 };

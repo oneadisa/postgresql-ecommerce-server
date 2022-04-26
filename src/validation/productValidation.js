@@ -32,6 +32,7 @@ export const validateProduct = async (product) => {
         .required()
         .label('Please provide a category for your product.'),
     storeId: Joi.number(),
+    images: Joi.array(),
     userId: Joi.number(),
   });
   const {error} = await schema.validateAsync(product);

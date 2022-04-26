@@ -3,16 +3,22 @@ import {
   deleteCampaignAction, updateCampaignProfile, addCampaign,
   getMyCampaignDetails, getCampaignDetails, getAllCampaigns,
   getCampaignDetailsUser} from '../controllers';
-import {protect, onCampaignCreation} from '../middlewares';
+import {protect,
+// onCampaignCreation
+} from '../middlewares';
 
 
 const router = expressRouter();
 
 router.route('/all').get(getAllCampaigns);
 
+// router
+// .route('/create')
+// .post(onCampaignCreation, addCampaign);
+
 router
     .route('/create')
-    .post(onCampaignCreation, addCampaign);
+    .post(addCampaign);
 
 // router.put('/me/update', protect, updateMyCampaignProfile);
 router.get('/me', protect, getMyCampaignDetails);

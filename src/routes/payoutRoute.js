@@ -1,6 +1,6 @@
 import {Router as expressRouter} from 'express';
 import {
-  deletePayoutAction, updatePayoutProfile, addPayout,
+  deletePayoutAction, updatePayoutProfile,
   getMyPayoutDetails, getMyPayoutRecievedDetails, getPayoutSumUser,
   getPayoutDetails, getAllPayouts, getMyPayoutRecievedSum,
   getMyDebtSum, getPayoutRecievedSumUser, getDebtSumUser,
@@ -8,16 +8,16 @@ import {
   getMyPayoutsCampaign,
   getPayoutsCampaign, getPayoutsSumCampaign, getDebtCampaign}
   from '../controllers';
-import {protect, onPayoutCreation} from '../middlewares';
+import {protect} from '../middlewares';
 
 
 const router = expressRouter();
 
 router.route('/all').get(getAllPayouts);
 
-router
-    .route('/create')
-    .post(onPayoutCreation, addPayout);
+// router
+// .route('/create')
+// .post(onPayoutCreation, addPayout);
 
 router.get('/me', protect, getMyPayoutDetails);
 router.get('/me/donated', protect, getPayoutSumUser);

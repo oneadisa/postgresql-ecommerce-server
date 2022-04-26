@@ -1,10 +1,14 @@
 import {successResponse, errorResponse,
   extractProductData} from '../utils/helpers';
 import {findStoreBy} from '../services';
-import cloudinary from 'cloudinary';
+// import cloudinary from 'cloudinary';
+// import {v2 as cloudinary} from 'cloudinary';
+require('dotenv').config();
+const cloudinary = require('cloudinary').v2;
 import {createProduct, findProductBy, updateProductBy,
   fetchAllProducts, deleteProduct, findProductsBy,
   findProductImagesAndCountBy, createProductImage,
+  findUserBy,
 } from '../services';
 
 
@@ -26,8 +30,16 @@ export const addProduct = async (req, res) => {
       productUnitCount,
       deliveryPrice,
       category,
-      userId} = req.body;
+      userId,
+      // images,
+    } = req.body;
     const store = await findStoreBy({userId});
+    let imagesArray = [];
+    if (typeof req.body.images === 'string') {
+      imagesArray.push(req.body.images);
+    } else {
+      imagesArray = req.body.images;
+    }
     const productInfo = {
       productTitle,
       shortDescription,
@@ -39,19 +51,15 @@ export const addProduct = async (req, res) => {
       category,
       storeId: store.id,
       userId,
+      // images,
     };
     const product = await createProduct(productInfo);
-    let images = [];
-    if (typeof req.body.images === 'string') {
-      images.push(req.body.images);
-    } else {
-      images = req.body.images;
-    }
     const imagesLinks = [];
-    for (let i = 0; i < images.length; i++) {
-      const result = await cloudinary.v2.uploader.upload(images[i], {
+    for (let i = 0; i < imagesArray.length; i++) {
+      const result = await cloudinary.uploader.upload(imagesArray[i], {
         folder: 'products',
       });
+      console.log('success', result);
       imagesLinks.push({
         publicId: result.public_id,
         url: result.secure_url,
@@ -71,12 +79,13 @@ export const addProduct = async (req, res) => {
     }
     const {count, rows} = await
     findProductImagesAndCountBy({productId: product.id});
-    req.body.images = imagesLinks;
-    req.body.user = req.user.id;
+    // req.body.images = imagesLinks;
+    // req.body.user = req.user.id;
     // const product = await Product.create(req.body);
     // successResponse(res, {...product}, 201);
     res.status(200).json({
       success: true,
+      // result,
       product,
       productImages: {
         count,
@@ -313,8 +322,10 @@ export const getProductDetailsUser = async (req, res, next) => {
      */
 export const getProductStore = async (req, res, next) => {
   try {
-    const products = await findProductsBy({userId: req.params.userId});
-    if (!products) {
+    const product = await findProductsBy({id: req.params.productId});
+    const user = findUserBy({id: product.userId});
+    const store = await findStoreBy({userId: user.id});
+    if (!product) {
       return errorResponse(res, {
         code: 401, message:
           'This user exists or is logged out. Please login or sign up.',
@@ -322,7 +333,8 @@ export const getProductStore = async (req, res, next) => {
     }
     res.status(200).json({
       success: true,
-      products,
+      store,
+      product,
     });
     successResponse(res, {...products}, 201);
   } catch (error) {

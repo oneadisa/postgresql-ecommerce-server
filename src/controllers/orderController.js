@@ -15,23 +15,46 @@ import {
 } from '../services';
 import {
   createWallet, findWalletBy,
-  addWalletTransaction,
+  addWalletTransaction, addTransaction,
 } from '../services';
 import {Op} from 'sequelize';
 const {creditAccount, debitAccount} = require( '../utils/transfer');
 const {v4} = require('uuid');
 // const {Op} = require('sequelize');
+const path = require('path');
+import axios from 'axios';
 
 /**
-       * Creates a new Order.
-       *
-       * @param {Request} req The request from the endpoint.
-       * @param {Response} res The response returned by the method.
-       * @memberof OrderController
-       * @return {JSON} A JSON response with the created Order's
-       *  details.
-       */
+ * Payment controller
+ *
+ * @param {Request} req The request from the endpoint.
+ * @param {Response} res The response returned by the method.
+ * @memberof WalletController
+ * @return {JSON} A JSON response with the registered
+ *  wallet's details and a JWT.
+ */
 export const addCashOrder = async (req, res) => {
+  try {
+    res.sendFile(path.join(__dirname + '../../../flutterOrder.html'));
+    // __dirname : It will resolve to your project folder.
+  } catch (err) {
+    errorResponse(res, {
+      message: err.message,
+    });
+  }
+};
+
+
+/**
+ * Creates a new Order.
+ *
+ * @param {Request} req The request from the endpoint.
+ * @param {Response} res The response returned by the method.
+ * @memberof OrderController
+ * @return {JSON} A JSON response with the created Order's
+ *  details.
+ */
+export const addCashOrderCallback = async (req, res) => {
   try {
     const {transaction_id} = req.query;
     // URL with transaction ID of which will be used to confirm
@@ -48,206 +71,402 @@ export const addCashOrder = async (req, res) => {
       },
     });
     console.log(response.data);
-    const {currency, id, amount, customer} = response.data.data;
+    const {currency, id} = response.data.data;
     const {status} = response.data.data;
+    const {cartItems, userId, address, city, state, country,
+      pinCode, phoneNumber} = response.data.data.meta;
     // check if transaction id already exist
     const transactionExist = await findTransactionBy({transactionId: id});
     if (transactionExist) {
       return res.status(409).
           send('Sorry, This Transaction Already Exists.');
     }
-    const {
-      address,
-      city,
-      state,
-      country,
-      pinCode,
-      phoneNumber,
-      quantity,
-      image,
-      paymentInfoId,
-      paymentInfoStatus,
-      itemsPrice,
-      totalPrice,
-      taxPrice,
-      orderStatus,
-      deliveredAt,
-      firstName,
-      lastName,
-      businessName,
-      userId,
-      productId,
-    } = response.data.data.meta;
-    const user = await findUserBy({id: userId});
-    const orderBusiness = await findBusinessBy({userId: user.id});
-    const product = await findProductBy({id: productId});
-    const store = await findStoreBy({id: product.storeId});
-    const owner = await findUserBy({id: product.userId});
-    const business = await findBusinessBy({userId: owner.id});
-    if (userId) {
-      if (orderBusiness) {
-        const orderInfo = {
-          address,
-          city,
-          state,
-          country,
-          pinCode,
-          phoneNumber,
-          email: user.email,
-          productName: product.productTitle,
-          price: product.price,
-          quantity,
-          image,
-          paymentInfoId,
-          paymentInfoStatus,
-          paidAt: Date.now(),
-          itemsPrice,
-          taxPrice,
-          deliveryPrice: product.deliveryPrice,
-          totalPrice,
-          orderStatus,
-          deliveredAt,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          businessName: orderBusiness.businessName,
-          userId,
-          productId,
-          ownerId: owner.id,
-          owner: owner.firstName + ' ' + owner.lastName,
-          store: store.storeName,
-          business: business.businessName,
-        };
-        orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
-        orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-          orderInfo.deliveryPrice;
-        // check if customer exist in our database
-        // const owner = await findUserBy({email: customer.email});
-        // check if user have a wallet, else create wallet
-        await validateUserWallet(owner.id);
-        // create wallet transaction
-        const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
-        // create transaction
-        const transaction = await createTransaction(owner.id, id,
-            status, currency, amount, customer);
-        await updateWallet(owner.id, amount);
-        const order = await createOrder(orderInfo);
-        // successResponse(res, {...order}, 201);
-        res.status(200).json({
-          success: true,
-          order,
-          walletTransaction,
-          transaction,
-        });
-      } else {
-        const orderInfo = {
-          address,
-          city,
-          state,
-          country,
-          pinCode,
-          phoneNumber,
-          email: user.email,
-          productName: product.productTitle,
-          price: product.price,
-          quantity,
-          image,
-          paymentInfoId,
-          paymentInfoStatus,
-          paidAt: Date.now(),
-          itemsPrice,
-          taxPrice,
-          deliveryPrice: product.deliveryPrice,
-          totalPrice,
-          orderStatus,
-          deliveredAt,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          userId,
-          productId,
-          ownerId: owner.id,
-          owner: owner.firstName + ' ' + owner.lastName,
-          store: store.storeName,
-          business: business.businessName,
-        };
-        orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
-        orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-          orderInfo.deliveryPrice;
-        // check if customer exist in our database
-        // const owner = await findUserBy({email: customer.email});
-        // check if user have a wallet, else create wallet
-        await validateUserWallet(owner.id);
-        // create wallet transaction
-        const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
-        // create transaction
-        const transaction = await createTransaction(owner.id, id,
-            status, currency, amount, customer);
-        await updateWallet(owner.id, amount);
-        const order = await createOrder(orderInfo);
-        // successResponse(res, {...order}, 201);
-        res.status(200).json({
-          success: true,
-          order,
-          walletTransaction,
-          transaction,
-        });
-      }
-    } else {
-      const product = await findProductBy({id: productId});
+
+    const cartItemsArray = JSON.parse(cartItems);
+    console.log(cartItemsArray);
+
+    for (let i = 0; i < cartItemsArray.length; i++) {
+      const user = await findUserBy({id: userId});
+      const orderBusiness = await findBusinessBy({userId: user.id});
+      const product = await findProductBy({id: cartItemsArray[i].productId});
       const store = await findStoreBy({id: product.storeId});
       const owner = await findUserBy({id: product.userId});
       const business = await findBusinessBy({userId: owner.id});
-      const orderInfo = {
-        address,
-        city,
-        state,
-        country,
-        pinCode,
-        phoneNumber,
-        productName: product.productTitle,
-        price: product.price,
-        quantity,
-        image,
-        paymentInfoId,
-        paymentInfoStatus,
-        paidAt: Date.now(),
-        itemsPrice,
-        taxPrice,
-        deliveryPrice: product.deliveryPrice,
-        totalPrice,
-        orderStatus,
-        deliveredAt,
-        firstName,
-        lastName,
-        businessName,
-        userId,
-        productId,
-        ownerId: owner.id,
-        owner: owner.firstName + ' ' + owner.lastName,
-        store: store.storeName,
-        business: business.businessName,
-      };
-      orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
-      orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-        orderInfo.deliveryPrice;
-      // check if customer exist in our database
-      // const owner = await findUserBy({email: customer.email});
-      // check if user have a wallet, else create wallet
-      await validateUserWallet(owner.id);
-      // create wallet transaction
-      const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
-      // create transaction
-      const transaction = await createTransaction(owner.id, id,
-          status, currency, amount, customer);
-      await updateWallet(owner.id, amount);
-      const order = await createOrder(orderInfo);
-      // successResponse(res, {...order}, 201);
-      res.status(200).json({
-        success: true,
-        order,
-        walletTransaction,
-        transaction,
-      });
+      const itemsPrice = cartItemsArray[i].price * cartItemsArray[i].quantity;
+      const deliveryPrice = product.deliveryPrice;
+      const taxPrice = 0.02651699 * (itemsPrice + deliveryPrice);
+      const vendorsPay = itemsPrice + deliveryPrice;
+      const totalPrice = itemsPrice + deliveryPrice + taxPrice;
+      if (userId) {
+        if (orderBusiness) {
+          const orderInfo = {
+            address,
+            city,
+            state,
+            country,
+            pinCode,
+            phoneNumber,
+            email: user.email,
+            productName: product.productTitle,
+            price: product.price,
+            quantity: cartItemsArray[i].quantity,
+            image: cartItemsArray[i].image,
+            paymentInfoId: transaction_id,
+            paymentInfoStatus: status,
+            paidAt: Date.now(),
+            itemsPrice,
+            taxPrice,
+            deliveryPrice,
+            totalPrice,
+            orderStatus: 'Processing',
+            // deliveredAt,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            businessName: orderBusiness.businessName,
+            userId,
+            productId: product.id,
+            ownerId: owner.id,
+            owner: owner.firstName + ' ' + owner.lastName,
+            store: store.storeName,
+            business: business.businessName,
+          };
+          // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+          // orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+          // orderInfo.deliveryPrice;
+          // check if customer exist in our database
+          // const owner = await findUserBy({email: customer.email});
+          // check if user have a wallet, else create wallet
+          await validateUserWallet(owner.id);
+          // create wallet transaction
+          await createWalletTransaction(owner.id, status, currency, vendorsPay);
+          // create transaction
+          await createTransaction(owner.id, id,
+              status, currency, vendorsPay, owner);
+          await updateWallet(owner.id, vendorsPay);
+          await createOrder(orderInfo);
+          // successResponse(res, {...order}, 201);
+          // res.status(200).json({
+          // success: true,
+          // order,
+          // walletTransaction,
+          // transaction,
+          // });
+        } else {
+          const orderInfo = {
+            address,
+            city,
+            state,
+            country,
+            pinCode,
+            phoneNumber,
+            email: user.email,
+            productName: product.productTitle,
+            price: product.price,
+            quantity,
+            image,
+            paymentInfoId: transaction_id,
+            paymentInfoStatus: status,
+            paidAt: Date.now(),
+            itemsPrice,
+            taxPrice,
+            deliveryPrice: product.deliveryPrice,
+            totalPrice,
+            orderStatus: 'Processing',
+            // deliveredAt,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            userId,
+            productId: product.id,
+            ownerId: owner.id,
+            owner: owner.firstName + ' ' + owner.lastName,
+            store: store.storeName,
+            business: business.businessName,
+          };
+          // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+          orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+            orderInfo.deliveryPrice;
+          // check if customer exist in our database
+          // const owner = await findUserBy({email: customer.email});
+          // check if user have a wallet, else create wallet
+          await validateUserWallet(owner.id);
+          // create wallet transaction
+          await createWalletTransaction(owner.id, status, currency, vendorsPay);
+          // create transaction
+          await createTransaction(owner.id, id,
+              status, currency, vendorsPay, owner);
+          await updateWallet(owner.id, vendorsPay);
+          await createOrder(orderInfo);
+          // successResponse(res, {...order}, 201);
+          // res.status(200).json({
+          // success: true,
+          // order,
+          // walletTransaction,
+          // transaction,
+          // });
+        }
+      } else {
+        // const user = await findUserBy({id: userId});
+        // const orderBusiness = await findBusinessBy({userId: user.id});
+        const product = await findProductBy({id: cartItemsArray[i].productId});
+        const store = await findStoreBy({id: product.storeId});
+        const owner = await findUserBy({id: product.userId});
+        const business = await findBusinessBy({userId: owner.id});
+        const itemsPrice = cartItemsArray[i].price * cartItemsArray[i].quantity;
+        const deliveryPrice = product.deliveryPrice;
+        const taxPrice = 0.02651699 * (itemsPrice + deliveryPrice);
+        const vendorsPay = itemsPrice + deliveryPrice;
+        const totalPrice = itemsPrice + deliveryPrice + taxPrice;
+        const orderInfo = {
+          address,
+          city,
+          state,
+          country,
+          pinCode,
+          phoneNumber,
+          productName: product.productTitle,
+          price: product.price,
+          quantity,
+          image,
+          paymentInfoId: transaction_id,
+          paymentInfoStatus: status,
+          paidAt: Date.now(),
+          itemsPrice,
+          taxPrice,
+          deliveryPrice: product.deliveryPrice,
+          totalPrice,
+          orderStatus: 'Processing',
+          // deliveredAt,
+          firstName,
+          lastName,
+          businessName,
+          userId,
+          productId: product.id,
+          ownerId: owner.id,
+          owner: owner.firstName + ' ' + owner.lastName,
+          store: store.storeName,
+          business: business.businessName,
+        };
+        // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+        orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+          orderInfo.deliveryPrice;
+        // check if customer exist in our database
+        // const owner = await findUserBy({email: customer.email});
+        // check if user have a wallet, else create wallet
+        await validateUserWallet(owner.id);
+        // create wallet transaction
+        await createWalletTransaction(owner.id, status, currency, vendorsPay);
+        // create transaction
+        createTransaction(owner.id, id,
+            status, currency, vendorsPay, owner);
+        await updateWallet(owner.id, vendorsPay);
+        await createOrder(orderInfo);
+        // successResponse(res, {...order}, 201);
+        // res.status(200).json({
+        // success: true,
+        // order,
+        // walletTransaction,
+        // transaction,
+        // });
+      }
     }
+
+    const {count, rows} = await
+    findOrdersAndCountBy({userId});
+    // req.body.images = imagesLinks;
+    // req.body.user = req.user.id;
+    // const product = await Product.create(req.body);
+    // successResponse(res, {...product}, 201);
+    res.status(200).json({
+      success: true,
+      // result,
+      orders: {
+        count,
+        rows,
+      },
+    });
+    // const {
+    // quantity,
+    // image,
+    // itemsPrice,
+    // totalPrice,
+    // taxPrice,
+    // orderStatus,
+    // deliveredAt,
+    // firstName,
+    // lastName,
+    // businessName,
+    // productId,
+    // } = response.data.data.meta;
+    // const user = await findUserBy({id: userId});
+    // const orderBusiness = await findBusinessBy({userId: user.id});
+    // const product = await findProductBy({id: productId});
+    // const store = await findStoreBy({id: product.storeId});
+    // const owner = await findUserBy({id: product.userId});
+    // const business = await findBusinessBy({userId: owner.id});
+    // if (userId) {
+    // if (orderBusiness) {
+    // const orderInfo = {
+    // address,
+    // city,
+    // state,
+    // country,
+    // pinCode,
+    // phoneNumber,
+    // email: user.email,
+    // productName: product.productTitle,
+    // price: product.price,
+    // quantity,
+    // image,
+    // paymentInfoId: transaction_id,
+    // paymentInfoStatus: status,
+    // paidAt: Date.now(),
+    // itemsPrice,
+    // taxPrice,
+    // deliveryPrice: product.deliveryPrice,
+    // totalPrice,
+    // orderStatus,
+    // deliveredAt,
+    // firstName: user.firstName,
+    // lastName: user.lastName,
+    // businessName: orderBusiness.businessName,
+    // userId,
+    // productId,
+    // ownerId: owner.id,
+    // owner: owner.firstName + ' ' + owner.lastName,
+    // store: store.storeName,
+    // business: business.businessName,
+    // };
+    // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+    // orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+    // orderInfo.deliveryPrice;
+    // check if customer exist in our database
+    // const owner = await findUserBy({email: customer.email});
+    // check if user have a wallet, else create wallet
+    // await validateUserWallet(owner.id);
+    // create wallet transaction
+    // const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
+    // create transaction
+    // const transaction = await createTransaction(owner.id, id,
+    // status, currency, amount, owner);
+    // await updateWallet(owner.id, amount);
+    // const order = await createOrder(orderInfo);
+    // successResponse(res, {...order}, 201);
+    // res.status(200).json({
+    // success: true,
+    // order,
+    // walletTransaction,
+    // transaction,
+    // });
+    // } else {
+    // const orderInfo = {
+    // address,
+    // city,
+    // state,
+    // country,
+    // pinCode,
+    // phoneNumber,
+    // email: user.email,
+    // productName: product.productTitle,
+    // price: product.price,
+    // quantity,
+    // image,
+    // paymentInfoId: transaction_id,
+    // paymentInfoStatus: status,
+    // paidAt: Date.now(),
+    // itemsPrice,
+    // taxPrice,
+    // deliveryPrice: product.deliveryPrice,
+    // totalPrice,
+    // orderStatus,
+    // deliveredAt,
+    // firstName: user.firstName,
+    // lastName: user.lastName,
+    // userId,
+    // productId,
+    // ownerId: owner.id,
+    // owner: owner.firstName + ' ' + owner.lastName,
+    // store: store.storeName,
+    // business: business.businessName,
+    // };
+    // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+    // orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+    // orderInfo.deliveryPrice;
+    // check if customer exist in our database
+    // const owner = await findUserBy({email: customer.email});
+    // check if user have a wallet, else create wallet
+    // await validateUserWallet(owner.id);
+    // create wallet transaction
+    // const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
+    // create transaction
+    // const transaction = await createTransaction(owner.id, id,
+    // status, currency, amount, customer);
+    // await updateWallet(owner.id, amount);
+    // const order = await createOrder(orderInfo);
+    // successResponse(res, {...order}, 201);
+    // res.status(200).json({
+    // success: true,
+    // order,
+    // walletTransaction,
+    // transaction,
+    // });
+    // }
+    // } else {
+    // const product = await findProductBy({id: productId});
+    // const store = await findStoreBy({id: product.storeId});
+    // const owner = await findUserBy({id: product.userId});
+    // const business = await findBusinessBy({userId: owner.id});
+    // const orderInfo = {
+    // address,
+    // city,
+    // state,
+    // country,
+    // pinCode,
+    // phoneNumber,
+    // productName: product.productTitle,
+    // price: product.price,
+    // quantity,
+    // image,
+    // paymentInfoId: transaction_id,
+    // paymentInfoStatus: status,
+    // paidAt: Date.now(),
+    // itemsPrice,
+    // taxPrice,
+    // deliveryPrice: product.deliveryPrice,
+    // totalPrice,
+    // orderStatus,
+    // deliveredAt,
+    // firstName,
+    // lastName,
+    // businessName,
+    // userId,
+    // productId,
+    // ownerId: owner.id,
+    // owner: owner.firstName + ' ' + owner.lastName,
+    // store: store.storeName,
+    // business: business.businessName,
+    // };
+    // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+    // orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+    // orderInfo.deliveryPrice;
+    // check if customer exist in our database
+    // const owner = await findUserBy({email: customer.email});
+    // check if user have a wallet, else create wallet
+    // await validateUserWallet(owner.id);
+    // create wallet transaction
+    // const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
+    // create transaction
+    // const transaction = await createTransaction(owner.id, id,
+    // status, currency, amount, customer);
+    // await updateWallet(owner.id, amount);
+    // const order = await createOrder(orderInfo);
+    // successResponse(res, {...order}, 201);
+    // res.status(200).json({
+    // success: true,
+    // order,
+    // walletTransaction,
+    // transaction,
+    // });
+    // }
   } catch (error) {
     errorResponse(res, {
       code: error.statusCode,
@@ -281,8 +500,8 @@ export const addWalletOrder = async (req, res) => {
       itemsPrice,
       totalPrice,
       taxPrice,
-      orderStatus,
-      deliveredAt,
+      // orderStatus,
+      // deliveredAt,
       firstName,
       lastName,
       businessName,
@@ -316,8 +535,8 @@ export const addWalletOrder = async (req, res) => {
           taxPrice,
           deliveryPrice: product.deliveryPrice,
           totalPrice,
-          orderStatus,
-          deliveredAt,
+          orderStatus: 'Processing',
+          // deliveredAt,
           firstName: user.firstName,
           lastName: user.lastName,
           businessName: orderBusiness.businessName,
@@ -368,8 +587,8 @@ export const addWalletOrder = async (req, res) => {
           taxPrice,
           deliveryPrice: product.deliveryPrice,
           totalPrice,
-          orderStatus,
-          deliveredAt,
+          orderStatus: 'Processing',
+          // deliveredAt,
           firstName: user.firstName,
           lastName: user.lastName,
           userId,
@@ -423,8 +642,8 @@ export const addWalletOrder = async (req, res) => {
         taxPrice,
         deliveryPrice: product.deliveryPrice,
         totalPrice,
-        orderStatus,
-        deliveredAt,
+        orderStatus: 'Processing',
+        // deliveredAt,
         firstName,
         lastName,
         businessName,
@@ -968,7 +1187,7 @@ const createTransaction = async (
     status,
     currency,
     amount,
-    customer,
+    owner,
 ) => {
   try {
     const wallet = await findWalletBy({userId});
@@ -976,9 +1195,9 @@ const createTransaction = async (
     const transaction = await addTransaction({
       userId,
       transactionId: id,
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone_number,
+      name: owner.firstName+' '+owner.lastName,
+      email: owner.email,
+      phone: owner.phoneNumber,
       amount,
       currency,
       balanceBefore: Number(wallet.balance),

@@ -23,7 +23,7 @@ export const validateUserSignup = async (user) => {
         .label('please input the account type (individual or business)'),
     gender: Joi.string().valid('male', 'female')
         .label('please input a gender (male or female)'),
-    phoneNumber: Joi.string().regex(/^[0-9+\(\)#\.\s\/ext-]+$/)
+    phoneNumber: Joi.string().regex(/^[0-9+\(\)#\.\s\/ext-]+$/).required()
         .label('Please input a valid phone number'),
     password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,30}$')).required()
         .label('Password is required. \n' +

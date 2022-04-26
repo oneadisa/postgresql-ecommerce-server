@@ -1,7 +1,8 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
-import cloudinary from 'cloudinary';
+require('dotenv').config();
+const cloudinary = require('cloudinary').v2;
 import cors from 'cors';
 import morgan from 'morgan';
 import errorhandler from 'errorhandler';
@@ -14,7 +15,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(morgan('dev'));
 app.use(cors());
-app.use(express.json());
+app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(fileUpload());

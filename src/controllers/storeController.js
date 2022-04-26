@@ -17,7 +17,8 @@ import {createStore, findStoreBy, updateStoreBy, findProductsBy,
 export const addStore = async (req, res) => {
   try {
     const {storeName, storeTagline, storeDescription,
-      storeLink, category, storeLogo, storeBackground, userId} = req.body;
+      storeLink, category, storeLogo, storeBackground, deliveryPrice,
+      userId} = req.body;
     const business = await findBusinessBy({userId});
     const storeDetails = {
       storeName,
@@ -27,6 +28,7 @@ export const addStore = async (req, res) => {
       category,
       storeLogo,
       storeBackground,
+      deliveryPrice,
       businessId: business.id,
       userId,
     };

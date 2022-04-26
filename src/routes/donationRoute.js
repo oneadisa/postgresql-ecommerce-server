@@ -19,7 +19,7 @@ router.route('/all').get(getAllDonations);
 router
     .route('/wallet/create')
     .post(onDonationCreation, addDonationWallet);
-router.post('/cash/create', addDonationCash);
+router.get('/cash/create', addDonationCash);
 router.get('/me', protect, getMyDonationDetails);
 router.get('/me/donated', protect, getDonationSumUser);
 router.get('/me/campaign', protect, getMyDonationRecievedDetails);

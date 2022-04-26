@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Receive Payment</title>
+</head>
+
+<body>
+    <form>
+        <script src="https://checkout.flutterwave.com/v3.js"></script>
+        <button type="button" onClick="makePayment()">Pay Now</button>
+    </form>
+
+    <script>
+        function makePayment() {
+            FlutterwaveCheckout({
+                public_key: "FLWPUBK_TEST-15ce38bdc2ca597ad6cec100bfe45342-X",
+                tx_ref: Date.now(),
+                amount: 100,
+                currency: "NGN",
+                country: "NG",
+                payment_options: "card",
+                // specified redirect URL
+                redirect_url: "http://localhost:8080/api/order/create/callback",
+                        meta: {
+                        consumer_id: 23,
+                        consumer_mac: "92a3-912ba-1192a",
+                        cartItems: JSON.stringify(
+                        [
+                         {
+                         productId: 4,
+                         name: "know how",
+                         price: 7500,
+                         image: "images.data[0].url.jpg",
+                         stock: 12,
+                         description: "brief desc.",
+                         deliveryPrice: 200,
+                         quantity: 2,
+                         },
+                         {
+                         productId: 6,
+                         name: "name name",
+                         price: 2300,
+                         image: "images.data[0].url.jpg",
+                         stock: 2,
+                         description: "data.product.shortDescription",
+                         deliveryPrice: "store.store.deliveryPrice",
+                         quantity: 3,
+                         },
+                         ]),
+                        userId: 1,
+                        address: "shippingInfo address",
+                        city: "shippingInfo city",
+                        state: "shippingInfo state",
+                        country: "shippingInfo country",
+                        pinCode: 2222,
+                        phoneNumber: 123456789,
+                        },
+                // use customer details if user is not logged in, else add user_id to the request
+                customer: {
+                    email: "demomail1@gmail.com",
+                    phone_number: "08088098622",
+                    name: "Quadri Hamsat",
+                },
+                callback: function (data) {
+                    console.log(data);
+                },
+                onclose: function () {
+                    // close modal
+                },
+                customizations: {
+                    title: "Flutterwave Demo",
+                    description: "Flutterwave Payment Demo",
+                    logo: "https://cdn.iconscout.com/icon/premium/png-256-thumb/payment-2193968-1855546.png",
+                },
+            });
+        }
+    </script>
+</body>
+
+</html>

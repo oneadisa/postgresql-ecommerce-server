@@ -42,6 +42,7 @@
         "errorhandler": "^1.5.1",
         "express": "^4.17.1",
         "express-fileupload": "^1.2.1",
+        "got": "^12.0.3",
         "joi": "^17.6.0",
         "joi-password-complexity": "^5.1.0",
         "jsonwebtoken": "^8.5.1",

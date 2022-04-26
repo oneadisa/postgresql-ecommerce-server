@@ -16,7 +16,7 @@ router.put('/me/update', protect, updateMyProfile);
 router.get('/me', protect, getMyDetails);
 router.put('/me/delete', protect, deleteMyAccount);
 
-router.get('/admin/profile/:userId', userProfile);
-router.put('/admin/update/:userId', updateProfile);
-router.delete('/admin/delete/:userId', protect, deleteUser);
+router.get('/one/profile/:userId', userProfile);
+router.put('/one/update/:userId', updateProfile);
+router.delete('/one/delete/:userId', protect, deleteUser);
 export default router;

@@ -3,7 +3,7 @@ import {successResponse, errorResponse,
   extractPayoutData} from '../utils/helpers';
 import ApiError from '../utils/apiError';
 import {findPayoutBy, findPayoutsBy, findPayoutsAndCountBy,
-  updatePayoutBy, findPayoutsSum, findDebtSum,
+  updatePayoutBy, findPayoutsSum, findPayoutDebtSum,
   fetchAllPayouts, deletePayoutById,
 } from '../services';
 
@@ -199,9 +199,9 @@ export const getMyPayoutRecievedSum = async (req, res, next) => {
                * @param {Response} next - The response returned by the method.
                * @memberof Auth
                */
-export const getMyDebtSum = async (req, res, next) => {
+export const getMyPayoutDebtSum = async (req, res, next) => {
   try {
-    const amount = await findDebtSum({recipientId: req.user.id});
+    const amount = await findPayoutDebtSum({recipientId: req.user.id});
     if (!amount) {
       return errorResponse(res, {code: 401, message:
                       // eslint-disable-next-line max-len
@@ -335,9 +335,9 @@ export const getPayoutRecievedSumUser = async (req, res, next) => {
                * @param {Response} next - The response returned by the method.
                * @memberof Auth
                */
-export const getDebtSumUser = async (req, res, next) => {
+export const getPayoutDebtSumUser = async (req, res, next) => {
   try {
-    const amount = await findDebtSum({recipientId: req.params.userId});
+    const amount = await findPayoutDebtSum({recipientId: req.params.userId});
     if (!amount) {
       return errorResponse(res, {code: 401, message:
                       // eslint-disable-next-line max-len
@@ -410,7 +410,7 @@ export const getPayoutsSumCampaign = async (req, res) => {
          * @return { JSON } A JSON response with the newly created booking.
          * @memberof CampaignReviewController
          */
-export const getDebtCampaign = async (req, res) => {
+export const getPayoutDebtCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
     const amount = await findSumBy({campaignId: id});
