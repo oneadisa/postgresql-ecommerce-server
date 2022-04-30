@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import {updateAny} from '../services';
 
 
 /**
@@ -47,6 +49,51 @@ export const generateToken = (payLoad, expiresIn = '1d') => {
 export const generateTokenAlive = (payLoad) => {
   return jwt.sign(payLoad, process.env.SECRET);
 };
+
+/**
+*  Synchronously sign the given payload into a JSON Web Token
+*  string that never expires.
+* @memberof Helpers
+* @param {object} user The input param.
+* @return {string} JWT token.
+*/
+export const getResetPasswordToken = async (user) => {
+  // Generating Token
+  const resetToken = crypto.randomBytes(20).toString('hex');
+  // Hashing and adding resetPasswordToken to userSchema
+  user.resetPasswordToken =
+  crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+  user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+  await updateAny({
+    resetPasswordToken: crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex'), resetPasswordExpire: Date.now() + 15 * 60 * 1000,
+  }, {id: user.id});
+  return resetToken;
+};
+
+const Peep = function(firstName) {
+  'use strict';
+  const peep = {};
+  peep.firstName = firstName;
+
+  peep.innerSayHello = function() {
+    console.log('Hello, I\'m ' + peep.firstName + '.');
+  };
+
+  return peep;
+};
+
+const peep1 = new Peep('Bob');
+const peep2 = new Peep('Doug');
+
+peep1.innerSayHello();
+peep2.innerSayHello();
+
 
 /**
  * Generates a JSON response for success scenarios.

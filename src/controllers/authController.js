@@ -1,13 +1,17 @@
 /* eslint-disable max-len */
 import {generateToken, successResponse, errorResponse,
-  comparePassword, extractUserData, verifyToken}
+  comparePassword, extractUserData, verifyToken,
+  getResetPasswordToken}
   from '../utils/helpers';
-import {createUser, getProfile, findUserBy, updateById, updatePassword}
+import {createUser, getProfile, findUserBy, updateById,
+  updateAny, updatePassword}
   from '../services';
 import ApiError from '../utils/apiError';
 import {
-  sendVerificationEmail, sendResetMail,
+  sendVerificationEmail, sendResetMail, sendEmail,
 } from '../utils/mailer';
+import crypto from 'crypto';
+const {Op} = require('sequelize');
 
 /**
  * Registers a new user.
@@ -99,7 +103,7 @@ export const sendResetPasswordEmail= async (req, res) => {
  * @return {JSON} A JSON response with the registered user and a JWT.
  * @memberof Auth
  */
-export const resetPassword = async (req, res) => {
+export const autoResetPassword = async (req, res) => {
   try {
     const {password, email} = req.body;
     const {token} = req.params;
@@ -250,3 +254,113 @@ export const getMyDetails = async (req, res, next) => {
   }
 };
 
+
+/**
+ *
+ *  Forgot Password
+ * @static
+ * @param {Request} req - The request from the endpoint.
+ * @param {Response} res - The response returned by the method.
+ * @param {Response} next - The response returned by the method.
+ * @memberof Auth
+ */
+export const forgotPassword = async (req, res, next) => {
+  const user = await findUserBy({email: req.body.email});
+
+  if (!user) {
+    throw new ApiError('User not found', 404);
+  }
+
+  // Get ResetPassword Token
+  const resetToken = getResetPasswordToken(user);
+
+  await updateAny({resetPasswordToken: resetToken}, {id: user.id});
+
+  const resetPasswordUrl = `${req.protocol}://${req.get(
+      'host',
+  )}/password/reset/${resetToken}`;
+
+  const message = `Your password reset token is :- \n\n ${resetPasswordUrl} \n\nIf you have not requested this email then, please ignore it.`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: `Gaged Password Recovery`,
+      message,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Email sent to ${user.email} successfully`,
+    });
+  } catch (error) {
+    await updateAny({resetPasswordToken: undefined, resetPasswordExpire: undefined}, {id: user.id});
+
+    throw new ApiError(error.message, 500);
+  }
+};
+
+// Reset Password
+/**
+ *
+ *  Reset Password
+ * @static
+ * @param {Request} req - The request from the endpoint.
+ * @param {Response} res - The response returned by the method.
+ * @param {Response} next - The response returned by the method.
+ * @memberof Auth
+ */
+export const resetPassword = async (req, res, next) => {
+  // creating token hash
+  const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+
+  const user = await findUserBy({
+    resetPasswordToken: resetPasswordToken,
+    resetPasswordExpire: {[Op.gt]: Date.now()},
+  });
+
+  if (!user) {
+    throw new ApiError(
+        'Reset Password Token is invalid or has been expired',
+        400,
+    );
+  }
+
+  if (req.body.password !== req.body.confirmPassword) {
+    throw new ApiError('Password does not match', 400);
+  }
+
+  await updateAny({resetPasswordToken: undefined, resetPasswordExpire: undefined, password: req.body.password}, {id: user.id});
+  // await updateAny({password: req.body.password}, {id: user.id});
+
+  sendToken(user, 200, res);
+};
+
+/**
+ *
+ *  Update password
+ * @static
+ * @param {Request} req - The request from the endpoint.
+ * @param {Response} res - The response returned by the method.
+ * @param {Response} next - The response returned by the method.
+ * @memberof Auth
+ */
+export const updatePasswordOne = async (req, res, next) => {
+  const user = await findUserBy(req.user.id).select('+password');
+
+  const isPasswordMatched = await comparePassword(req.body.oldPassword);
+
+  if (!isPasswordMatched) {
+    throw new ApiError('Old password is incorrect', 400);
+  }
+
+  if (req.body.newPassword !== req.body.confirmPassword) {
+    throw new ApiError('password does not match', 400);
+  }
+  await updateAny({password: req.body.newPassword}, {id: req.user.id});
+
+  sendToken(user, 200, res);
+};

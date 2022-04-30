@@ -887,7 +887,7 @@ export const getMyStoreCustomerDetails = async (req, res, next) => {
       return errorResponse(res, {
         code: 401, message:
           // eslint-disable-next-line max-len
-          'You do not have any orders yet.',
+          'You do not have any customers yet.',
       });
     }
     res.status(200).json({

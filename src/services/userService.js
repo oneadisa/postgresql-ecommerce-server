@@ -80,6 +80,24 @@ export const updateAny = async (newValues, obj) => {
 };
 
 /**
+ * Function for update query
+ *
+*@param {object} newValues Object of fields to be updated
+*@param {object} obj An object of the keys to be
+ * searched e.g {id}, {productEmail}
+ * @memberof UserService
+ * @return {Promise<User>} A promise object with user detail.
+ */
+export const updateUserBy = async (newValues, obj) => {
+  const user = await findUserBy(obj);
+  if (!user) {
+    throw new ApiError(404, `User with ${obj} does not exist`);
+  }
+
+  return await user.update(newValues);
+};
+
+/**
  * Function fetching user profile
  *
  * @param {userId} userId A user id

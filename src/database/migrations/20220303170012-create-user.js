@@ -119,6 +119,14 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
       },
+      resetPasswordToken: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      resetPasswordExpire: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
     });
   },
   async down(queryInterface, Sequelize) {

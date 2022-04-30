@@ -53,7 +53,7 @@ export const addProduct = async (req, res) => {
       userId,
       // images,
     };
-    const product = await createProduct(productInfo);
+    const preProduct = await createProduct(productInfo);
     const imagesLinks = [];
     for (let i = 0; i < imagesArray.length; i++) {
       const result = await cloudinary.uploader.upload(imagesArray[i], {
@@ -70,15 +70,18 @@ export const addProduct = async (req, res) => {
       const productImageInfo = {
         publicId,
         url,
-        productId: product.id,
+        productId: preProduct.id,
         userId,
       };
       await createProductImage(productImageInfo);
       // await createProductImage(imagesLinks[i], product.id,
       // userId );
     }
+
+    // eslint-disable-next-line max-len
+    const product = await updateProductBy({images: imagesLinks[0].url}, {id: preProduct.id});
     const {count, rows} = await
-    findProductImagesAndCountBy({productId: product.id});
+    findProductImagesAndCountBy({productId: preProduct.id});
     // req.body.images = imagesLinks;
     // req.body.user = req.user.id;
     // const product = await Product.create(req.body);
@@ -86,6 +89,7 @@ export const addProduct = async (req, res) => {
     res.status(200).json({
       success: true,
       // result,
+      preProduct,
       product,
       productImages: {
         count,

@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     gender: {
       type: DataTypes.ENUM,
-      values: ['male', 'female'],
+      values: ['male', 'female', 'gender neutral'],
       allowNull: true,
     },
     phoneNumber: {
@@ -105,6 +105,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DOUBLE,
       allowNull: false,
       defaultValue: 0,
+    },
+    resetPasswordToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordExpire: {
+      allowNull: false,
+      type: DataTypes.DATE,
     },
   });
   User.associate = (models) => {

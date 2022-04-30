@@ -17,12 +17,12 @@ router
 router.get('/me', protect, getMyProductImageDetails);
 router.get('/me/profile/:userId', protect, getProductImageDetailsUser);
 
-router.get('/one/review/:productImageId', getProductImageDetails);
+router.get('/one/image/:productImageId', getProductImageDetails);
 router.put('/one/update/:productImageId', updateProductImageProfile);
 router.delete('/one/delete/:productImageId', protect,
     deleteProductImageAction);
 
-router.get('/admin/review/:productImageId', getProductImageDetails);
+router.get('/admin/image/:productImageId', getProductImageDetails);
 router.put('/admin/update/:productImageId', updateProductImageProfile);
 router.delete('/admin/delete/:productImageId',
     deleteProductImageAction);
