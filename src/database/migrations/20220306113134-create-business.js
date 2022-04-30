@@ -30,9 +30,22 @@ module.exports = {
         values: ['LLC', 'sole proprietorship', 'unregistered'],
         allowNull: false,
       },
-      cacCertURL: {
+      regNum: {
         type: Sequelize.STRING,
         allowNull: true,
+      },
+      cacCertURL: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'https://www.seekpng.com/png/full/332-3320905_shadow-768x364-light-gray-gradient-background.png',
+      },
+      formCO7: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'https://www.seekpng.com/png/full/332-3320905_shadow-768x364-light-gray-gradient-background.png',
+        validate: {
+          isUrl: true,
+        },
       },
       userId: {
         type: Sequelize.INTEGER,

@@ -27,9 +27,22 @@ module.exports = (sequelize, DataTypes) => {
           values: ['LLC', 'sole proprietorship', 'unregistered'],
           allowNull: false,
         },
-        cacCertURL: {
+        regNum: {
           type: DataTypes.STRING,
           allowNull: true,
+        },
+        cacCertURL: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          defaultValue: 'https://www.seekpng.com/png/full/332-3320905_shadow-768x364-light-gray-gradient-background.png',
+          validate: {
+            isUrl: true,
+          },
+        },
+        formCO7: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          defaultValue: 'https://www.seekpng.com/png/full/332-3320905_shadow-768x364-light-gray-gradient-background.png',
           validate: {
             isUrl: true,
           },
@@ -45,6 +58,13 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: {
         name: 'userId',
       },
+    });
+    Business.hasOne(models.Store, {
+      foreignKey: {
+        name: 'businessId',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
     });
   };
 

@@ -14,6 +14,8 @@ export const onBusinessCreation = async (req, res, next) => {
     const validated = await validateBusiness(req.body);
     if (validated) {
       const {businessEmail, userId} = req.body;
+      // const {userId} = req.user.id;
+      // const {businessEmail} = req.body;
       const business = await findBusinessBy({businessEmail});
       const user = await findUserBy({id: userId});
       if (business) {
@@ -41,3 +43,10 @@ export const onBusinessCreation = async (req, res, next) => {
     });
   }
 };
+
+// else if (!user) {
+// errorResponse(res, {
+// code: 404,
+// message: `User with id: ${userId} does not exist`,
+// });
+// }

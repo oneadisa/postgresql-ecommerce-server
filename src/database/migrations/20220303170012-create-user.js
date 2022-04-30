@@ -19,6 +19,9 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
+        validate: {
+          isEmail: true,
+        },
       },
       accountType: {
         type: Sequelize.ENUM,
@@ -38,11 +41,89 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      isVerified: {
+        type: Sequelize.BOOLEAN,
+        allowNull: true,
+        defaultValue: false,
+      },
+      avatar: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+      'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
+        validate: {
+          isUrl: true,
+        },
+      },
+      role: {type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+          'user'},
+      meansOfID: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      IDpic: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+          'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
+        validate: {
+          isUrl: true,
+        },
+      },
+      bankCode: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      bankAccountName: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      bankAccountNumber: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      walletBalance: {
+        type: Sequelize.DOUBLE,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      twitter: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+     'https://twitter.com',
+        validate: {
+          isUrl: true,
+        },
+      },
+      facebook: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:
+     'https://facebook.com',
+        validate: {
+          isUrl: true,
+        },
+      },
+      whatsapp: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
       updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      resetPasswordToken: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      resetPasswordExpire: {
         allowNull: false,
         type: Sequelize.DATE,
       },
