@@ -163,7 +163,7 @@ export const getAllCampaigns = async (req, res) => {
   try {
     const campaigns = await fetchAllCampaigns();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       campaigns,
     });
@@ -282,13 +282,13 @@ export const deleteCampaignAction = async (req, res) => {
            */
 export const getMyCampaignDetails = async (req, res, next) => {
   try {
-    const {count, rows} = await findCampaignsAndCountBy({userId: req.user.id});
+    const {count, rows} = await findCampaignsAndCountBy({userId: req.params.userId});
     if (!rows) {
       return errorResponse(res, {code: 401, message:
                   // eslint-disable-next-line max-len
                   'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -317,7 +317,7 @@ export const getCampaignDetailsUser = async (req, res, next) => {
                   // eslint-disable-next-line max-len
                   'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       campaigns,
     });

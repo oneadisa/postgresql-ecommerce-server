@@ -3,7 +3,7 @@
 import {successResponse, errorResponse,
   extractDonationData} from '../utils/helpers';
 import ApiError from '../utils/apiError';
-import {createDonation, findDonationBy, findDonationsBy, findDonationsAndCountBy,
+import {createDonation, findDonationBy, findDonationsAndCountBy,
   updateDonationBy, findCampaignBy, findUserBy, findDonationsSum, findDebtSum,
   fetchAllDonations, deleteDonationById, findBusinessBy, createPayout,
   findTransactionBy,
@@ -156,7 +156,7 @@ export const addDonationCash = async (req, res) => {
           newPayout
           , payoutDelay);
       await triggerPayout();
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         donation,
         walletTransaction,
@@ -235,7 +235,7 @@ export const addDonationCash = async (req, res) => {
       const triggerPayout = () => setTimeout( newPayout
           , payoutDelay);
       await triggerPayout();
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         donation,
         walletTransaction,
@@ -369,7 +369,7 @@ export const addDonationWallet = async (req, res) => {
           , payoutDelay);
 
       await triggerPayout();
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         donation,
         transfer,
@@ -449,7 +449,7 @@ export const addDonationWallet = async (req, res) => {
       const triggerPayout = () => setTimeout( newPayout
           , payoutDelay);
       await triggerPayout();
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         donation,
         transfer,
@@ -476,7 +476,7 @@ export const getAllDonations = async (req, res) => {
   try {
     const Donations = await fetchAllDonations();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       Donations,
     });
@@ -576,12 +576,12 @@ export const deleteDonationAction = async (req, res) => {
 export const getMyDonationDetails = async (req, res, next) => {
   try {
     const {count, rows} = await findDonationsAndCountBy({userId: req.user.id});
-    if (!rows) {
-      return errorResponse(res, {code: 401, message:
-                    // eslint-disable-next-line max-len
-                    'This user does not exist or is logged out. Please login or sign up.'});
-    }
-    res.status(200).json({
+    // if (!rows) {
+    // return errorResponse(res, {code: 401, message:
+    // eslint-disable-next-line max-len
+    // 'This user does not exist or is logged out. Please login or sign up.'});
+    // }
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -604,12 +604,12 @@ export const getMyDonationDetails = async (req, res, next) => {
 export const getMyDonationRecievedDetails = async (req, res, next) => {
   try {
     const {count, rows} = await findDonationsAndCountBy({recipientId: req.user.id});
-    if (!rows) {
-      return errorResponse(res, {code: 401, message:
-                    // eslint-disable-next-line max-len
-                    'This user does not exist or is logged out. Please login or sign up.'});
-    }
-    res.status(200).json({
+    // if (!rows) {
+    // return errorResponse(res, {code: 401, message:
+    // eslint-disable-next-line max-len
+    // 'This user does not exist or is logged out. Please login or sign up.'});
+    // }
+    return res.status(200).json({
       success: true,
       count, rows,
     });
@@ -636,7 +636,7 @@ export const getMyDonationRecievedSum = async (req, res, next) => {
                     // eslint-disable-next-line max-len
                     'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -663,7 +663,7 @@ export const getMyDebtSum = async (req, res, next) => {
                     // eslint-disable-next-line max-len
                     'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -684,15 +684,16 @@ export const getMyDebtSum = async (req, res, next) => {
              */
 export const getDonationDetailsUser = async (req, res, next) => {
   try {
-    const Donations = await findDonationsBy({userId: req.params.userId});
-    if (!Donations) {
-      return errorResponse(res, {code: 401, message:
-                    // eslint-disable-next-line max-len
-                    'This user does not exist or is logged out. Please login or sign up.'});
-    }
-    res.status(200).json({
+    const {count, rows} = await findDonationsAndCountBy({userId: req.params.userId});
+    // if (!Donations) {
+    // return errorResponse(res, {code: 401, message:
+    // eslint-disable-next-line max-len
+    // 'This user does not exist or is logged out. Please login or sign up.'});
+    // }
+    return res.status(200).json({
       success: true,
-      Donations,
+      count,
+      rows,
     });
     successResponse(res, {...Donations}, 201);
   } catch (error) {
@@ -712,12 +713,12 @@ export const getDonationDetailsUser = async (req, res, next) => {
 export const getDonationSumUser = async (req, res, next) => {
   try {
     const sum = await findDonationsSum({userId: req.params.userId});
-    if (!sum) {
-      return errorResponse(res, {code: 401, message:
-                    // eslint-disable-next-line max-len
-                    'This user does not exist or is logged out. Please login or sign up.'});
-    }
-    res.status(200).json({
+    // if (!sum) {
+    // return errorResponse(res, {code: 401, message:
+    // eslint-disable-next-line max-len
+    // 'This user does not exist or is logged out. Please login or sign up.'});
+    // }
+    return res.status(200).json({
       success: true,
       sum,
     });
@@ -740,12 +741,12 @@ export const getDonationSumUser = async (req, res, next) => {
 export const getDonationRecievedDetailsUser = async (req, res, next) => {
   try {
     const {count, rows} = await findDonationsAndCountBy({recipientId: req.params.userId});
-    if (!rows) {
-      return errorResponse(res, {code: 401, message:
-                    // eslint-disable-next-line max-len
-                    'This user does not exist or is logged out. Please login or sign up.'});
-    }
-    res.status(200).json({
+    // if (!rows) {
+    //   return errorResponse(res, {code: 401, message:
+    //                 // eslint-disable-next-line max-len
+    //                 'This user does not exist or is logged out. Please login or sign up.'});
+    // }
+    return res.status(200).json({
       success: true,
       count, rows,
     });
@@ -767,12 +768,12 @@ export const getDonationRecievedDetailsUser = async (req, res, next) => {
 export const getDonationRecievedSumUser = async (req, res, next) => {
   try {
     const amount = await findDonationsSum({recipientId: req.params.userId});
-    if (!amount) {
-      return errorResponse(res, {code: 401, message:
-                    // eslint-disable-next-line max-len
-                    'This user does not exist or is logged out. Please login or sign up.'});
-    }
-    res.status(200).json({
+    // if (!amount) {
+    // return errorResponse(res, {code: 401, message:
+    // eslint-disable-next-line max-len
+    // 'This user does not exist or is logged out. Please login or sign up.'});
+    // }
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -794,12 +795,12 @@ export const getDonationRecievedSumUser = async (req, res, next) => {
 export const getDebtSumUser = async (req, res, next) => {
   try {
     const amount = await findDebtSum({recipientId: req.params.userId});
-    if (!amount) {
-      return errorResponse(res, {code: 401, message:
-                    // eslint-disable-next-line max-len
-                    'This user does not exist or is logged out. Please login or sign up.'});
-    }
-    res.status(200).json({
+    // if (!amount) {
+    // return errorResponse(res, {code: 401, message:
+    // eslint-disable-next-line max-len
+    // 'This user does not exist or is logged out. Please login or sign up.'});
+    // }
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -822,7 +823,7 @@ export const getDonationsCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
     const {count, rows} = await findDonationsAndCountBy({campaignId: id});
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -846,7 +847,7 @@ export const getDonationsSumCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
     const amount = await findDonationsSum({campaignId: id});
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -870,7 +871,7 @@ export const getDebtCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
     const amount = await findSumBy({campaignId: id});
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -893,7 +894,7 @@ export const getMyDonationsCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
     const {count, rows} = await findDonationsAndCountBy({campaignId: id, userId: req.user.id});
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,

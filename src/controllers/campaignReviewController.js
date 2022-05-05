@@ -7,7 +7,7 @@ import {findBusinessBy, findUserBy,
 } from '../services';
 
 import {createCampaignReview, findCampaignReviewBy, findCampaignReviewsBy,
-  updateCampaignReviewBy,
+  updateCampaignReviewBy, findCampaignReviewsAndCountBy,
   fetchAllCampaignReviews, deleteCampaignReview,
 } from '../services';
 
@@ -50,7 +50,10 @@ export const addCampaignReview = async (req, res) => {
         const campaingReview = await createCampaignReview(campaingReviewInfo);
         // const previousCampaign = await findCampaignBy({id: campaignId});
         // const newReviewCount = previousCampaign.numberOfReviews + 1;
-        successResponse(res, {...campaingReview}, 201);
+        const campaingReviewResponse =
+          extractCampaignReviewData(campaingReview);
+        successResponse(res, campaingReviewResponse, 201);
+        // successResponse(res, {...campaingReview}, 201);
       }
     } else {
       const campaingReviewInfo = {
@@ -71,7 +74,10 @@ export const addCampaignReview = async (req, res) => {
         const campaingReview = await createCampaignReview(campaingReviewInfo);
         // const previousCampaign = await findCampaignBy({id: campaignId});
         // const newReviewCount = previousCampaign.numberOfReviews + 1;
-        successResponse(res, {...campaingReview}, 201);
+        const campaingReviewResponse =
+          extractCampaignReviewData(campaingReview);
+        successResponse(res, campaingReviewResponse, 201);
+        // successResponse(res, {...campaingReview}, 201);
       }
     }
   } catch (error) {
@@ -95,9 +101,9 @@ export const getAllCampaignReviews = async (req, res) => {
   try {
     const campaingReviews = await fetchAllCampaignReviews();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      campaingReviews,
+      data: campaingReviews,
     });
     successResponse(res, {...campaingReviews}, 201);
   } catch (error) {
@@ -140,9 +146,13 @@ export const getCampaignReviewDetails = async (req, res) => {
 export const getCampaignReviewsCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
-    const campaingReviews = await findCampaignReviewsBy({campaignId: id});
+    const {count, rows} = await findCampaignReviewsAndCountBy({campaignId: id});
     // const userResponse = extractUserData(user);
-    successResponse(res, campaingReviews, 200);
+    return res.status(200).json({
+      success: true,
+      count,
+      rows,
+    });
   } catch (error) {
     errorResponse(res, {code: error.statusCode, message: error.message});
   }
@@ -206,7 +216,7 @@ export const getMyCampaignReviewDetails = async (req, res, next) => {
       return errorResponse(res, {code: 401, message:
                 'This user exists or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       campaingReviews,
     });
@@ -227,16 +237,17 @@ export const getMyCampaignReviewDetails = async (req, res, next) => {
          */
 export const getCampaignReviewDetailsUser = async (req, res, next) => {
   try {
-    const campaingReviews = await findCampaignReviewsBy({userId: req.user.id});
+    // eslint-disable-next-line max-len
+    const campaingReviews = await findCampaignReviewsBy({userId: req.params.userId});
     if (!campaingReviews) {
       return errorResponse(res, {code: 401, message:
                 'This user exists or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       campaingReviews,
     });
-    successResponse(res, {...campaingReviews}, 201);
+    // successResponse(res, {...campaingReviews}, 201);
   } catch (error) {
     errorResponse(res, {});
   }

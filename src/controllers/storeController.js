@@ -65,7 +65,7 @@ export const getAllStores = async (req, res) => {
   try {
     const stores = await fetchAllStores();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       stores,
     });
@@ -118,7 +118,7 @@ export const getStoreProducts = async (req, res) => {
           'This store does not exist.',
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -231,7 +231,7 @@ export const getMyStoreDetails = async (req, res, next) => {
     // generateToken({email: user.email});
     const response = extractStoreData(store);
     // const {token} = loginResponse;
-    // res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
+    // return res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
     successResponse(res, {...response});
   } catch (error) {
     errorResponse(res, {});
@@ -256,10 +256,11 @@ export const getStoreDetailsUser = async (req, res, next) => {
     }
     // user.token =
     // generateToken({email: user.email});
-    const response = extractStoreData(store);
+    // const response = extractStoreData(store);
     // const {token} = loginResponse;
-    // res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
-    successResponse(res, {...response});
+    // return res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
+    const storeResponse = extractStoreData(store);
+    return successResponse(res, storeResponse, 200);
   } catch (error) {
     errorResponse(res, {});
   }

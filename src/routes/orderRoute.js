@@ -23,11 +23,11 @@ router
 router.post('/create/wallet', onOrderCreation, addWalletOrder);
 
 router.get('/me', protect, getMyOrderDetails);
-router.get('/me/profile/:userId', protect, getOrderDetailsUser);
+router.get('/me/profile/:userId', getOrderDetailsUser);
 
 router.get('/one/order/:orderId', getOrderDetails);
 router.put('/one/update/:orderId', updateOrderProfile);
-router.delete('/one/delete/:orderId', protect,
+router.delete('/one/delete/:orderId',
     deleteOrderAction);
 
 router.get('/admin/order/:orderId', getOrderDetails);
@@ -38,9 +38,9 @@ router.delete('/admin/delete/:orderId',
 router.get('/one/product/:productId', getOrdersProduct);
 router.get('/me/order', protect, getMyStoreOrderDetails);
 router.get('/me/sales', protect, getMyStoreRaised);
-router.get('/me/revenue', protect, getMyStoreRevenue);
-router.get('/one/sales/:ownerId', getStoreRaisedUser);
+router.get('/store/revenue/:ownerId', getMyStoreRevenue);
+router.get('/store/sales/:ownerId', getStoreRaisedUser);
 router.get('/me/customer', protect, getMyStoreCustomerDetails);
-router.get('/one/order/:ownerId', getSingleStoreOrderDetails);
-router.get('/one/customer/:ownerId', getSingleStoreCustomerDetails);
+router.get('/store/order/:ownerId', getSingleStoreOrderDetails);
+router.get('/store/customer/:ownerId', getSingleStoreCustomerDetails);
 export default router;

@@ -7,17 +7,17 @@ import {protect} from '../middlewares';
 
 const router = expressRouter();
 
-router.post('/create', protect, onBusinessCreation, addBusiness);
+router.post('/create', onBusinessCreation, addBusiness);
 router
     .route('/all')
     .get(getAllBusinesses);
 
 router.put('/me/update', protect, updateMyBusinessProfile);
-router.get('/me/:userId', protect, getMyBusinessDetails);
+router.get('/me/profile/:userId', getMyBusinessDetails);
 router.delete('/me/delete', protect, deleteMyBusinessAccount);
 
 router.get('/admin/profile/:businessId', businessProfile);
 router.put('/admin/update/:businessId', updateBusinessProfile);
-router.delete('/admin/delete/:businessId', protect, deleteBusiness);
+router.delete('/admin/delete/:businessId', deleteBusiness);
 
 export default router;

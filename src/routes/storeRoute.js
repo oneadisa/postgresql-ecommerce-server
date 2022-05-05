@@ -14,11 +14,11 @@ router.route('/all').get(getAllStores);
 
 router
     .route('/create')
-    .post(protect, onStoreCreation, addStore);
+    .post( onStoreCreation, addStore);
 
 router.put('/me/update', protect, updateMyStoreProfile);
 router.get('/me', protect, getMyStoreDetails);
-router.get('/me/profile/:userId', protect, getStoreDetailsUser);
+router.get('/me/profile/:userId', getStoreDetailsUser);
 router.delete('/me/delete', protect, deleteMyStoreAccount);
 
 router.get('/one/products/:storeId', getStoreProducts);

@@ -86,7 +86,7 @@ export const addProduct = async (req, res) => {
     // req.body.user = req.user.id;
     // const product = await Product.create(req.body);
     // successResponse(res, {...product}, 201);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       // result,
       preProduct,
@@ -127,11 +127,11 @@ export const getAllProducts = async (req, res) => {
   try {
     const products = await fetchAllProducts();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       products,
     });
-    successResponse(res, {...products}, 201);
+    // successResponse(res, {products}, 201);
   } catch (error) {
     errorResponse(res, {
       code: error.statusCode,
@@ -278,7 +278,7 @@ export const getMyProductDetails = async (req, res, next) => {
       return errorResponse(res, {code: 401, message:
             'This user exists or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -305,7 +305,7 @@ export const getProductDetailsUser = async (req, res, next) => {
       return errorResponse(res, {code: 401, message:
             'This user exists or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       products,
     });
@@ -326,21 +326,22 @@ export const getProductDetailsUser = async (req, res, next) => {
      */
 export const getProductStore = async (req, res, next) => {
   try {
-    const product = await findProductsBy({id: req.params.productId});
-    const user = findUserBy({id: product.userId});
+    const product = await findProductBy({id: req.params.productId});
+    const user = await findUserBy({id: product.userId});
     const store = await findStoreBy({userId: user.id});
     if (!product) {
       return errorResponse(res, {
         code: 401, message:
-          'This user exists or is logged out. Please login or sign up.',
+    'This user exists or is logged out. Please login or sign up.',
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       store,
+      user,
       product,
     });
-    successResponse(res, {...products}, 201);
+    // successResponse(res, {...products}, 201);
   } catch (error) {
     errorResponse(res, {});
   }
