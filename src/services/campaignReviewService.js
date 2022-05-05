@@ -98,6 +98,16 @@ export const updateCampaignReviewBy = async (newValues, obj) => {
 };
 
 /**
+ * Find all product reviews given a query and give count
+ * @param {number | object | string} options - Donation search value
+ * @return {Promise<object>} A promise object with user detail.
+ * @memberof DonationService
+ */
+export const findCampaignReviewsAndCountBy = async (options) => {
+  return await CampaignReview.findAndCountAll({where: options});
+};
+
+/**
   * Fetches a campaign instance based on it's primary key.
   * @param {integer} campaignId - Primary key of the campaign to be fetched.
   * @param {object} options - Additional query information

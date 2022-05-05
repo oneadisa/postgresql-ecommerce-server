@@ -18,7 +18,7 @@ export const getAllUsers = async (req, res, next) => {
   try {
     const {count, rows} = await User.findAndCountAll({});
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,

@@ -11,7 +11,7 @@ import db from '../database/models';
 const {Wallet} = db;
 const {creditAccount, debitAccount} = require( '../utils/transfer');
 const {v4} = require('uuid');
-// const path = require('path');
+const path = require('path');
 import axios from 'axios';
 // import got from 'got';
 require('dotenv').config();
@@ -41,7 +41,7 @@ export const walletBalance = async (req, res, next) => {
       return successResponse(res, wallet, 200);
     }
     // user
-    res.status(200).json(
+    return res.status(200).json(
         {response: 'success',
           balance: userWallet.balance});
   } catch (error) {
@@ -110,50 +110,50 @@ export const fw = async (req, res, next) => {
  */
 export const fund = async (req, res, next) => {
   try {
-    // res.sendFile(path.join(__dirname + '../../../flutter.html'));
+    return res.sendFile(path.join(__dirname + '../../../flutter.html'));
     // __dirname : It will resolve to your project folder.
-    const {
-      amount,
-      userId,
-    } = req.body;
-    const user = await findUserBy({id: userId});
-    console.log(user);
-    const fundData = ({
-      'tx_ref': Date.now(),
-      'amount': amount,
-      'currency': 'NGN',
-      'redirect_url': 'http://localhost:8080/api/wallet/fund/response',
-      'meta': {
-        'consumer_id': user.id,
-        'consumer_mac': '92a3-912ba-1192a',
-      },
-      'customer': {
-        'email': user.email,
-        'phone_number': user.phoneNumber,
-        'name': user.firstName+' '+user.lastName,
-      },
-      'customizations': {
-        'title': 'Gaged Payments',
-        'logo': 'https://www.linkpicture.com/q/Gaged-Blue.svg',
-      },
-    });
-    console.log(fundData);
-    const config = {
-      method: 'post',
-      url: 'https://api.flutterwave.com/v3/payments',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
-      },
-      data: fundData,
-    };
+    // const {
+    // amount,
+    // userId,
+    // } = req.body;
+    // const user = await findUserBy({id: userId});
+    // console.log(user);
+    // const fundData = ({
+    // 'tx_ref': Date.now(),
+    // 'amount': amount,
+    // 'currency': 'NGN',
+    // 'redirect_url': 'http://localhost:8080/api/wallet/fund/response',
+    // 'meta': {
+    // 'consumer_id': user.id,
+    // 'consumer_mac': '92a3-912ba-1192a',
+    // },
+    // 'customer': {
+    // 'email': user.email,
+    // 'phone_number': user.phoneNumber,
+    // 'name': user.firstName+' '+user.lastName,
+    // },
+    // 'customizations': {
+    // 'title': 'Gaged Payments',
+    // 'logo': 'https://www.linkpicture.com/q/Gaged-Blue.svg',
+    // },
+    // });
+    // console.log(fundData);
+    // const config = {
+    // method: 'post',
+    // url: 'https://api.flutterwave.com/v3/payments',
+    // headers: {
+    // 'Content-Type': 'application/json',
+    // 'Accept': 'application/json',
+    // 'Authorization': `Bearer ${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
+    // },
+    // data: fundData,
+    // };
 
-    const preResponse = await axios(config);
-    console.log(preResponse);
-    const response = preResponse.data;
-    res.redirect(response.data.link);
-    return successResponse(res, {...response}, 201);
+    // const preResponse = await axios(config);
+    // console.log(preResponse);
+    // const response = preResponse.data;
+    // return res.redirect(response.data.link);
+    // return successResponse(res, {...response}, 201);
   } catch (err) {
     errorResponse(res, {
       message: err.message,
@@ -231,7 +231,8 @@ export const withdraw = async (req, res) => {
     const preResponse = await axios(config);
     console.log(preResponse);
     const response = preResponse.data;
-    return successResponse(res, {...response}, 201);
+    const walletResponse = await getWithdrawResponse(response);
+    return successResponse(res, {...walletResponse}, 201);
     // return res.status(200).json({
     // response,
     // });
@@ -313,17 +314,8 @@ export const getFundResponse = async (req, res, next) => {
   }
 };
 
-/**
- * Get payment response modal
- *
- * @param {Request} req The request from the endpoint.
- * @param {Response} res The response returned by the method.
- * @param {Response} next The response returned by the method.
- * @memberof WalletController
- * @return {JSON} A JSON response with the registered
- *  wallet's details and a JWT.
- */
-export const getWithdrawResponse = async (req, res, next) => {
+// get withdraw response
+const getWithdrawResponse = async (response) => {
   try {
     // const {transaction_id} = req.query;
 
@@ -341,7 +333,6 @@ export const getWithdrawResponse = async (req, res, next) => {
     // 'Authorization': `${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
     // },
     // });
-    const response = req.body;
 
     console.log(response);
 
@@ -352,7 +343,7 @@ export const getWithdrawResponse = async (req, res, next) => {
     const transactionExist = await findTransactionBy({transactionId: id});
 
     if (transactionExist) {
-      return res.status(409).send('Sorry, This Transaction Already Exists.');
+      return 'Sorry, This Transaction Already Exists.';
     }
 
     // check if customer exist in our database
@@ -362,25 +353,25 @@ export const getWithdrawResponse = async (req, res, next) => {
     const wallet = await validateUserWallet(user.id);
 
     if (Number(wallet.balance) < amount) {
-      return {
+      return ({
         status: false,
-        statusCode: 400,
-        message: `User ${userId} has insufficient balance. Please try to withdraw a lower 
+        // statusCode: 400,
+        message: `User ${user.id} has insufficient balance. Please try to withdraw a lower 
         amount.`,
-      };
+      });
     }
 
     // create wallet transaction
-    const debitWalletTransaction = await createDebitWalletTransaction(user.id, status, currency, amount);
+    const debitWalletTransaction = await createDebitWalletTransaction(user.id, currency, amount);
 
     // create transaction
     const debitTransaction = await createDebitTransaction(user.id, id, status, currency, amount, user);
 
     const walletNew = await deductWallet(user.id, amount);
 
-    return res.status(200).json({
+    return ({
       response: 'wallet debited successfully',
-      data: walletNew,
+      walletNew,
       debitWalletTransaction,
       debitTransaction,
     });
@@ -407,7 +398,7 @@ export const getAllWallets = async (req, res, next) => {
   try {
     const wallets = await Wallet.findAll({});
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       wallets,
     });
@@ -608,9 +599,10 @@ const validateUserWallet = async (userId) => {
     }
     return userWallet;
   } catch (error) {
-    errorResponse(res, {
-      message: error.message,
-    });
+    console.log(error);
+    // errorResponse(res, {
+    //   message: error.message,
+    // });
   }
 };
 
@@ -640,7 +632,7 @@ const createWalletTransaction =
 
 // Create Wallet Transaction
 const createDebitWalletTransaction =
-  async (userId, status, currency, amount) => {
+  async (userId, currency, amount) => {
     try {
       const wallet = await findWalletBy({userId});
       // create wallet transaction
@@ -649,9 +641,9 @@ const createDebitWalletTransaction =
         userId,
         isInflow: false,
         balanceBefore: Number(wallet.balance),
-        balanceAfter: Number(wallet.balance) + Number(amount),
+        balanceAfter: Number(wallet.balance) - Number(amount),
         currency,
-        status,
+        status: 'successful',
       });
       return walletTransaction;
     } catch (error) {
@@ -718,7 +710,7 @@ const createDebitTransaction = async (
       amount,
       currency,
       balanceBefore: Number(wallet.balance),
-      balanceAfter: Number(wallet.balance) + Number(amount),
+      balanceAfter: Number(wallet.balance) - Number(amount),
       paymentStatus: status,
       paymentGateway: 'flutterwave',
     });

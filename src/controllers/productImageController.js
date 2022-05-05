@@ -73,7 +73,7 @@ export const getAllProductImages = async (req, res) => {
   try {
     const productImages = await fetchAllProductImages();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       productImages,
     });
@@ -184,7 +184,7 @@ export const getMyProductImageDetails = async (req, res, next) => {
       return errorResponse(res, {code: 401, message:
                 'This user exists or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       productImages,
     });
@@ -211,7 +211,7 @@ export const getProductImageDetailsUser = async (req, res, next) => {
       return errorResponse(res, {code: 401, message:
                 'This user exists or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       productImages,
     });

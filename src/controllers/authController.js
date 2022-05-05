@@ -28,11 +28,13 @@ export const userSignup = async (req, res) => {
     user.token = generateToken({email: user.email});
     // TODO: delete password field
     // user = extractUserData(user);
+    // var boy = {name: 'John'};
     const {token} = user;
     res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
     const isSent = await sendVerificationEmail(req, {...user});
     successResponse(res, {...user, emailSent: isSent}, 201);
   } catch (error) {
+    // console.log(boy);
     return errorResponse(res, {
       message: error.message,
       code: error.code,

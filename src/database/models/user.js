@@ -111,7 +111,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     resetPasswordExpire: {
-      allowNull: false,
+      allowNull: true,
       type: DataTypes.DATE,
     },
   });

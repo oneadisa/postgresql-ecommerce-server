@@ -124,7 +124,7 @@ module.exports = {
         allowNull: true,
       },
       resetPasswordExpire: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE,
       },
     });

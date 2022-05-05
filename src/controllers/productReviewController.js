@@ -104,7 +104,7 @@ export const getAllProductReviews = async (req, res) => {
   try {
     const productReviews = await fetchAllProductReviews();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       productReviews,
     });
@@ -151,7 +151,7 @@ export const getProductRatingProduct = async (req, res) => {
     const id = req.params.productId;
     const productRating = await findProductReviewsRating({productId: id});
     const reach = 10/productRating[0].ratings;
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       productRating,
       reach,
@@ -173,9 +173,11 @@ export const getProductRatingProduct = async (req, res) => {
      */
 export const getProductReviewsProduct = async (req, res) => {
   try {
-    const id = req.params.productId;
-    const {count, rows} = await findProductReviewsAndCountBy({productId: id});
-    res.status(200).json({
+    const productId = req.params.productId;
+    const {count, rows} = await findProductReviewsAndCountBy({productId});
+    // const productImages = await findProductReviewsBy({productId: id});
+    // successResponse(res, productImages, 200);
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -242,7 +244,7 @@ export const getMyProductReviewDetails = async (req, res, next) => {
       return errorResponse(res, {code: 401, message:
               'This user exists or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -270,7 +272,7 @@ export const getProductReviewDetailsUser = async (req, res, next) => {
       return errorResponse(res, {code: 401, message:
               'This user exists or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -293,14 +295,14 @@ export const getProductReviewDetailsUser = async (req, res, next) => {
 export const getMyStoreProductReviews = async (req, res, next) => {
   try {
     const {count, rows} = await
-    findProductReviewsBy({ownerId: req.user.id});
+    findProductReviewsBy({ownerId: req.params.ownerId});
     if (!rows) {
       return errorResponse(res, {
         code: 401, message:
           'This user exists or is logged out. Please login or sign up.',
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,

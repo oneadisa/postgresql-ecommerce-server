@@ -1,23 +1,24 @@
 import {Router as expressRouter} from 'express';
 import {fund, getFundResponse, walletBalance,
   getMyWalletDetails, addWallet, transfer,
-  getWithdrawResponse, withdraw, fw,
+  // getWithdrawResponse,
+  withdraw, fw,
 } from '../controllers';
-import {protect} from '../middlewares';
+// import {protect} from '../middlewares';
 
 
 const router = expressRouter();
 
 router
     .route('/fund')
-    .post(fund);
+    .get(fund);
 router.post('/withdraw', withdraw);
 router.get('/one/:userId/balance', walletBalance);
 router.get('/fund/response', getFundResponse);
 router.get('/fw', fw);
-router.post('/withdraw/response', getWithdrawResponse);
-router.get('/me/:userId', protect, getMyWalletDetails);
-router.post('/new', protect, addWallet);
+// router.post('/withdraw/response', getWithdrawResponse);
+router.get('/me/:userId', getMyWalletDetails);
+router.post('/new', addWallet);
 
 
 router.post('/transfer', transfer);

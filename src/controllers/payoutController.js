@@ -20,7 +20,7 @@ export const getAllPayouts = async (req, res) => {
   try {
     const Payouts = await fetchAllPayouts();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       Payouts,
     });
@@ -125,7 +125,7 @@ export const getMyPayoutDetails = async (req, res, next) => {
                       // eslint-disable-next-line max-len
                       'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -153,7 +153,7 @@ export const getMyPayoutRecievedDetails = async (req, res, next) => {
                       // eslint-disable-next-line max-len
                       'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count, rows,
     });
@@ -180,7 +180,7 @@ export const getMyPayoutRecievedSum = async (req, res, next) => {
                       // eslint-disable-next-line max-len
                       'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -207,7 +207,7 @@ export const getMyPayoutDebtSum = async (req, res, next) => {
                       // eslint-disable-next-line max-len
                       'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -234,7 +234,7 @@ export const getPayoutDetailsUser = async (req, res, next) => {
                       // eslint-disable-next-line max-len
                       'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       Payouts,
     });
@@ -261,7 +261,7 @@ export const getPayoutSumUser = async (req, res, next) => {
                       // eslint-disable-next-line max-len
                       'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       sum,
     });
@@ -289,7 +289,7 @@ export const getPayoutRecievedDetailsUser = async (req, res, next) => {
                       // eslint-disable-next-line max-len
                       'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count, rows,
     });
@@ -316,7 +316,7 @@ export const getPayoutRecievedSumUser = async (req, res, next) => {
                       // eslint-disable-next-line max-len
                       'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -343,7 +343,7 @@ export const getPayoutDebtSumUser = async (req, res, next) => {
                       // eslint-disable-next-line max-len
                       'This user does not exist or is logged out. Please login or sign up.'});
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -366,7 +366,7 @@ export const getPayoutsCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
     const {count, rows} = await findPayoutsAndCountBy({campaignId: id});
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -390,7 +390,7 @@ export const getPayoutsSumCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
     const amount = await findPayoutsSum({campaignId: id});
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -414,7 +414,7 @@ export const getPayoutDebtCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
     const amount = await findSumBy({campaignId: id});
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       amount,
     });
@@ -437,7 +437,7 @@ export const getMyPayoutsCampaign = async (req, res) => {
   try {
     const id = req.params.campaignId;
     const {count, rows} = await findPayoutsAndCountBy({campaignId: id, userId: req.user.id});
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,

@@ -21,8 +21,8 @@ router
     .post(addCampaign);
 
 // router.put('/me/update', protect, updateMyCampaignProfile);
-router.get('/me', protect, getMyCampaignDetails);
-router.get('/me/profile/:userId', protect, getCampaignDetailsUser);
+router.get('/me/profile/:userId', getMyCampaignDetails);
+router.get('/me', protect, getCampaignDetailsUser);
 // router.delete('/me/delete', protect, deleteMyCampaignAccount);
 
 router.get('/one/campaign/:campaignId', getCampaignDetails);

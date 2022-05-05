@@ -24,15 +24,15 @@ router.get('/me/donated', protect, getPayoutSumUser);
 router.get('/me/campaign', protect, getMyPayoutRecievedDetails);
 router.get('/me/raised', protect, getMyPayoutRecievedSum);
 router.get('/me/debt', protect, getMyDebtSum);
-router.get('/me/profile/:userId', protect, getPayoutDetailsUser);
-router.get('/me/campaign/:userId', protect, getPayoutRecievedDetailsUser);
-router.get('/me/raised/:userId', protect, getPayoutRecievedSumUser);
-router.get('/me/debt/:userId', protect, getDebtSumUser);
+router.get('/me/profile/:userId', getPayoutDetailsUser);
+router.get('/me/campaign/:userId', getPayoutRecievedDetailsUser);
+router.get('/me/raised/:userId', getPayoutRecievedSumUser);
+router.get('/me/debt/:userId', getDebtSumUser);
 
 
 router.get('/one/payout/:payoutId', getPayoutDetails);
 router.put('/one/update/:payoutId', updatePayoutProfile);
-router.delete('/one/delete/:payoutId', protect,
+router.delete('/one/delete/:payoutId',
     deletePayoutAction);
 
 router.get('/admin/payout/:payoutId', getPayoutDetails);
@@ -40,9 +40,9 @@ router.put('/admin/update/:payoutId', updatePayoutProfile);
 router.delete('/admin/delete/:payoutId',
     deletePayoutAction);
 
-router.get('/one/campaign/:campaignId', protect, getPayoutsCampaign);
-router.get('/one/raised/:campaignId', protect, getPayoutsSumCampaign);
-router.get('/one/debt/:campaignId', protect, getDebtCampaign);
+router.get('/one/campaign/:campaignId', getPayoutsCampaign);
+router.get('/one/raised/:campaignId', getPayoutsSumCampaign);
+router.get('/one/debt/:campaignId', getDebtCampaign);
 
-router.get('/one/payout/:campaignId', protect, getMyPayoutsCampaign);
+router.get('/one/payout/:campaignId', getMyPayoutsCampaign);
 export default router;

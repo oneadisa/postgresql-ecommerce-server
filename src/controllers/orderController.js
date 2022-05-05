@@ -35,7 +35,7 @@ import axios from 'axios';
  */
 export const addCashOrder = async (req, res) => {
   try {
-    res.sendFile(path.join(__dirname + '../../../flutterOrder.html'));
+    return res.sendFile(path.join(__dirname + '../../../flutterOrder.html'));
     // __dirname : It will resolve to your project folder.
   } catch (err) {
     errorResponse(res, {
@@ -145,7 +145,7 @@ export const addCashOrderCallback = async (req, res) => {
           await updateWallet(owner.id, vendorsPay);
           await createOrder(orderInfo);
           // successResponse(res, {...order}, 201);
-          // res.status(200).json({
+          // return res.status(200).json({
           // success: true,
           // order,
           // walletTransaction,
@@ -197,7 +197,7 @@ export const addCashOrderCallback = async (req, res) => {
           await updateWallet(owner.id, vendorsPay);
           await createOrder(orderInfo);
           // successResponse(res, {...order}, 201);
-          // res.status(200).json({
+          // return res.status(200).json({
           // success: true,
           // order,
           // walletTransaction,
@@ -261,7 +261,7 @@ export const addCashOrderCallback = async (req, res) => {
         await updateWallet(owner.id, vendorsPay);
         await createOrder(orderInfo);
         // successResponse(res, {...order}, 201);
-        // res.status(200).json({
+        // return res.status(200).json({
         // success: true,
         // order,
         // walletTransaction,
@@ -276,7 +276,7 @@ export const addCashOrderCallback = async (req, res) => {
     // req.body.user = req.user.id;
     // const product = await Product.create(req.body);
     // successResponse(res, {...product}, 201);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       // result,
       orders: {
@@ -351,7 +351,7 @@ export const addCashOrderCallback = async (req, res) => {
     // await updateWallet(owner.id, amount);
     // const order = await createOrder(orderInfo);
     // successResponse(res, {...order}, 201);
-    // res.status(200).json({
+    // return res.status(200).json({
     // success: true,
     // order,
     // walletTransaction,
@@ -403,7 +403,7 @@ export const addCashOrderCallback = async (req, res) => {
     // await updateWallet(owner.id, amount);
     // const order = await createOrder(orderInfo);
     // successResponse(res, {...order}, 201);
-    // res.status(200).json({
+    // return res.status(200).json({
     // success: true,
     // order,
     // walletTransaction,
@@ -460,7 +460,7 @@ export const addCashOrderCallback = async (req, res) => {
     // await updateWallet(owner.id, amount);
     // const order = await createOrder(orderInfo);
     // successResponse(res, {...order}, 201);
-    // res.status(200).json({
+    // return res.status(200).json({
     // success: true,
     // order,
     // walletTransaction,
@@ -562,7 +562,7 @@ export const addWalletOrder = async (req, res) => {
         ]);
         const order = await createOrder(orderInfo);
         // successResponse(res, {...order}, 201);
-        res.status(200).json({
+        return res.status(200).json({
           success: true,
           order,
           // walletTransaction,
@@ -613,7 +613,7 @@ export const addWalletOrder = async (req, res) => {
         ]);
         const order = await createOrder(orderInfo);
         // successResponse(res, {...order}, 201);
-        res.status(200).json({
+        return res.status(200).json({
           success: true,
           order,
           // walletTransaction,
@@ -669,7 +669,7 @@ export const addWalletOrder = async (req, res) => {
       ]);
       const order = await createOrder(orderInfo);
       // successResponse(res, {...order}, 201);
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         order,
         // walletTransaction,
@@ -696,7 +696,7 @@ export const getAllOrders = async (req, res) => {
   try {
     const orders = await fetchAllOrders();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       orders,
     });
@@ -743,7 +743,7 @@ export const getOrdersProduct = async (req, res) => {
     const id = req.params.productId;
     const {count, rows} = await findOrdersAndCountBy({productId: id});
     // const userResponse = extractUserData(user);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -855,7 +855,7 @@ export const getMyOrderDetails = async (req, res, next) => {
           'This user does not exist or is logged out. Please login or sign up.',
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -890,7 +890,7 @@ export const getMyStoreCustomerDetails = async (req, res, next) => {
           'You do not have any customers yet.',
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -921,7 +921,7 @@ export const getMyStoreOrderDetails = async (req, res, next) => {
           'You do not have any orders yet.',
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -945,18 +945,19 @@ export const getMyStoreRaised = async (req, res, next) => {
   try {
     const sales = await
     findOrderPriceSum({ownerId: req.user.id});
-    if (!sales) {
-      return errorResponse(res, {
-        code: 401, message:
-          // eslint-disable-next-line max-len
-          'You do not have any orders yet.',
-      });
-    }
-    res.status(200).json({
+    // if (!sales) {
+      // return errorResponse(res, {
+    // code: 401, message:
+    // eslint-disable-next-line max-len
+    // 'You do not have any orders yet.',
+      // });
+    // }
+    return res.status(200).json({
       success: true,
       sales,
     });
-    successResponse(res, {...orders}, 201);
+
+    // successResponse(res, {...orders}, 201);
   } catch (error) {
     errorResponse(res, {});
   }
@@ -974,19 +975,19 @@ export const getMyStoreRaised = async (req, res, next) => {
 export const getMyStoreRevenue = async (req, res, next) => {
   try {
     const sales = await
-    findOrderTotalPriceSum({ownerId: req.user.id});
-    if (!sales) {
-      return errorResponse(res, {
-        code: 401, message:
-          // eslint-disable-next-line max-len
-          'You do not have any orders yet.',
-      });
-    }
-    res.status(200).json({
+    findOrderTotalPriceSum({ownerId: req.params.ownerId});
+    // if (!sales) {
+      // return errorResponse(res, {
+    // code: 401, message:
+    // eslint-disable-next-line max-len
+    // 'You do not have any orders yet.',
+      // });
+    // }
+    return res.status(200).json({
       success: true,
       sales,
     });
-    successResponse(res, {...orders}, 201);
+    // successResponse(res, {...orders}, 201);
   } catch (error) {
     errorResponse(res, {});
   }
@@ -1005,18 +1006,18 @@ export const getStoreRaisedUser = async (req, res, next) => {
   try {
     const sales = await
     findOrderPriceSum({ownerId: req.params.ownerId});
-    if (!sales) {
-      return errorResponse(res, {
-        code: 401, message:
-          // eslint-disable-next-line max-len
-          'You do not have any orders yet.',
-      });
-    }
-    res.status(200).json({
+    // if (!sales) {
+      // return errorResponse(res, {
+    // code: 401, message:
+    // eslint-disable-next-line max-len
+    // 'You do not have any orders yet.',
+      // });
+    // }
+    return res.status(200).json({
       success: true,
       sales,
     });
-    successResponse(res, {...orders}, 201);
+    // successResponse(res, {...orders}, 201);
   } catch (error) {
     errorResponse(res, {});
   }
@@ -1035,13 +1036,13 @@ export const getSingleStoreOrderDetails = async (req, res, next) => {
   try {
     const {count, rows} = await
     findOrdersAndCountBy({ownerId: req.params.ownerId});
-    if (!rows) {
-      return errorResponse(res, {
-        code: 401, message:
-          'This user does not have any orders yet.',
-      });
-    }
-    res.status(200).json({
+    // if (!rows) {
+      // return errorResponse(res, {
+    // code: 401, message:
+    // 'This user does not have any orders yet.',
+      // });
+    // }
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -1069,13 +1070,13 @@ export const getSingleStoreCustomerDetails = async (req, res, next) => {
         [Op.not]: null,
       },
     });
-    if (!rows) {
-      return errorResponse(res, {
-        code: 401, message:
-          'This user does not have any orders yet.',
-      });
-    }
-    res.status(200).json({
+    // if (!rows) {
+      // return errorResponse(res, {
+    // code: 401, message:
+    // 'This user does not have any orders yet.',
+      // });
+    // }
+    return res.status(200).json({
       success: true,
       count,
       rows,
@@ -1106,7 +1107,7 @@ export const getOrderDetailsUser = async (req, res, next) => {
           'This user does not exist or is logged out. Please login or sign up.',
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count,
       rows,

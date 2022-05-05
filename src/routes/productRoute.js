@@ -14,19 +14,19 @@ router.route('/all').get(getAllProducts);
 
 router
     .route('/create')
-    .post(protect, onProductCreation, addProduct);
+    .post(onProductCreation, addProduct);
 
 router.put('/me/update', protect, updateMyProductProfile);
 router.get('/me', protect, getMyProductDetails);
-router.get('/me/profile/:userId', protect, getProductDetailsUser);
+router.get('/me/profile/:userId', getProductDetailsUser);
 
 router.get('/one/profile/:productId', getProductDetails);
 router.get('/one/store/:productId', getProductStore);
 router.put('/one/update/:productId', updateProductProfile);
-router.delete('/one/delete/:productId', protect, deleteProductAction);
+router.delete('/one/delete/:productId', deleteProductAction);
 
 router.get('/admin/profile/:productId', getProductDetails);
 router.put('/admin/update/:productId', updateProductProfile);
-router.delete('/admin/delete/:productId', protect, deleteProductAction);
+router.delete('/admin/delete/:productId', deleteProductAction);
 
 export default router;

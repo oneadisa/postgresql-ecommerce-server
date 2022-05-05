@@ -11,12 +11,12 @@ import ApiError from '../utils/apiError';
 export const validateUserSignup = async (user) => {
   // Joi parameters to test against user inputs
   const schema = Joi.object({
-    firstName: Joi.string().alphanum().min(3).max(25).required()
+    firstName: Joi.string().alphanum().min(2).max(25).required()
         .label('Please enter a valid firstname \n' +
-        'the field must not be empty and it must be more than 2 letters'),
-    lastName: Joi.string().alphanum().min(3).max(25).required()
+        'the field must not be empty and it must be more than 1 letter'),
+    lastName: Joi.string().alphanum().min(2).max(25).required()
         .label('Please enter a valid lastname \n'+
-        'the field must not be empty and it must be more than 2 letters'),
+        'the field must not be empty and it must be more than 1 letter'),
     email: Joi.string().email().required()
         .label('Please enter a valid email address'),
     accountType: Joi.string().valid('individual', 'business')

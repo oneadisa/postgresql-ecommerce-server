@@ -15,11 +15,11 @@ router
     .post(protect, onProductImageCreation, addProductImage);
 
 router.get('/me', protect, getMyProductImageDetails);
-router.get('/me/profile/:userId', protect, getProductImageDetailsUser);
+router.get('/me/profile/:userId', getProductImageDetailsUser);
 
 router.get('/one/image/:productImageId', getProductImageDetails);
 router.put('/one/update/:productImageId', updateProductImageProfile);
-router.delete('/one/delete/:productImageId', protect,
+router.delete('/one/delete/:productImageId',
     deleteProductImageAction);
 
 router.get('/admin/image/:productImageId', getProductImageDetails);
