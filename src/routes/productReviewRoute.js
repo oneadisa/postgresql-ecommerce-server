@@ -13,7 +13,7 @@ router.route('/all').get(getAllProductReviews);
 
 router
     .route('/create')
-    .post(protect, onProductReviewCreation, addProductReview);
+    .post(onProductReviewCreation, addProductReview);
 
 router.get('/me', protect, getMyProductReviewDetails);
 router.get('/me/profile/:userId', getProductReviewDetailsUser);
@@ -30,6 +30,6 @@ router.delete('/admin/delete/:productReviewId',
 
 router.get('/one/product/:productId', getProductReviewsProduct);
 router.get('/one/rating/:productId', getProductRatingProduct);
-router.get('me/owner/:ownerId', getMyStoreProductReviews);
+router.get('/me/owner/:ownerId', getMyStoreProductReviews);
 
 export default router;

@@ -10,7 +10,7 @@ import ApiError from '../utils/apiError';
 import {
   createOrder, findOrderBy, findOrdersAndCountBy,
   updateOrderBy, updateProductBy, findOrderPriceSum,
-  findOrderTotalPriceSum, findTransactionBy,
+  findOrderVendorsPaySum, findTransactionBy,
   fetchAllOrders, deleteOrder,
 } from '../services';
 import {
@@ -117,6 +117,7 @@ export const addCashOrderCallback = async (req, res) => {
             itemsPrice,
             taxPrice,
             deliveryPrice,
+            vendorsPay,
             totalPrice,
             orderStatus: 'Processing',
             // deliveredAt,
@@ -170,6 +171,7 @@ export const addCashOrderCallback = async (req, res) => {
             itemsPrice,
             taxPrice,
             deliveryPrice: product.deliveryPrice,
+            vendorsPay,
             totalPrice,
             orderStatus: 'Processing',
             // deliveredAt,
@@ -233,6 +235,7 @@ export const addCashOrderCallback = async (req, res) => {
           itemsPrice,
           taxPrice,
           deliveryPrice: product.deliveryPrice,
+          vendorsPay,
           totalPrice,
           orderStatus: 'Processing',
           // deliveredAt,
@@ -284,189 +287,6 @@ export const addCashOrderCallback = async (req, res) => {
         rows,
       },
     });
-    // const {
-    // quantity,
-    // image,
-    // itemsPrice,
-    // totalPrice,
-    // taxPrice,
-    // orderStatus,
-    // deliveredAt,
-    // firstName,
-    // lastName,
-    // businessName,
-    // productId,
-    // } = response.data.data.meta;
-    // const user = await findUserBy({id: userId});
-    // const orderBusiness = await findBusinessBy({userId: user.id});
-    // const product = await findProductBy({id: productId});
-    // const store = await findStoreBy({id: product.storeId});
-    // const owner = await findUserBy({id: product.userId});
-    // const business = await findBusinessBy({userId: owner.id});
-    // if (userId) {
-    // if (orderBusiness) {
-    // const orderInfo = {
-    // address,
-    // city,
-    // state,
-    // country,
-    // pinCode,
-    // phoneNumber,
-    // email: user.email,
-    // productName: product.productTitle,
-    // price: product.price,
-    // quantity,
-    // image,
-    // paymentInfoId: transaction_id,
-    // paymentInfoStatus: status,
-    // paidAt: Date.now(),
-    // itemsPrice,
-    // taxPrice,
-    // deliveryPrice: product.deliveryPrice,
-    // totalPrice,
-    // orderStatus,
-    // deliveredAt,
-    // firstName: user.firstName,
-    // lastName: user.lastName,
-    // businessName: orderBusiness.businessName,
-    // userId,
-    // productId,
-    // ownerId: owner.id,
-    // owner: owner.firstName + ' ' + owner.lastName,
-    // store: store.storeName,
-    // business: business.businessName,
-    // };
-    // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
-    // orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-    // orderInfo.deliveryPrice;
-    // check if customer exist in our database
-    // const owner = await findUserBy({email: customer.email});
-    // check if user have a wallet, else create wallet
-    // await validateUserWallet(owner.id);
-    // create wallet transaction
-    // const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
-    // create transaction
-    // const transaction = await createTransaction(owner.id, id,
-    // status, currency, amount, owner);
-    // await updateWallet(owner.id, amount);
-    // const order = await createOrder(orderInfo);
-    // successResponse(res, {...order}, 201);
-    // return res.status(200).json({
-    // success: true,
-    // order,
-    // walletTransaction,
-    // transaction,
-    // });
-    // } else {
-    // const orderInfo = {
-    // address,
-    // city,
-    // state,
-    // country,
-    // pinCode,
-    // phoneNumber,
-    // email: user.email,
-    // productName: product.productTitle,
-    // price: product.price,
-    // quantity,
-    // image,
-    // paymentInfoId: transaction_id,
-    // paymentInfoStatus: status,
-    // paidAt: Date.now(),
-    // itemsPrice,
-    // taxPrice,
-    // deliveryPrice: product.deliveryPrice,
-    // totalPrice,
-    // orderStatus,
-    // deliveredAt,
-    // firstName: user.firstName,
-    // lastName: user.lastName,
-    // userId,
-    // productId,
-    // ownerId: owner.id,
-    // owner: owner.firstName + ' ' + owner.lastName,
-    // store: store.storeName,
-    // business: business.businessName,
-    // };
-    // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
-    // orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-    // orderInfo.deliveryPrice;
-    // check if customer exist in our database
-    // const owner = await findUserBy({email: customer.email});
-    // check if user have a wallet, else create wallet
-    // await validateUserWallet(owner.id);
-    // create wallet transaction
-    // const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
-    // create transaction
-    // const transaction = await createTransaction(owner.id, id,
-    // status, currency, amount, customer);
-    // await updateWallet(owner.id, amount);
-    // const order = await createOrder(orderInfo);
-    // successResponse(res, {...order}, 201);
-    // return res.status(200).json({
-    // success: true,
-    // order,
-    // walletTransaction,
-    // transaction,
-    // });
-    // }
-    // } else {
-    // const product = await findProductBy({id: productId});
-    // const store = await findStoreBy({id: product.storeId});
-    // const owner = await findUserBy({id: product.userId});
-    // const business = await findBusinessBy({userId: owner.id});
-    // const orderInfo = {
-    // address,
-    // city,
-    // state,
-    // country,
-    // pinCode,
-    // phoneNumber,
-    // productName: product.productTitle,
-    // price: product.price,
-    // quantity,
-    // image,
-    // paymentInfoId: transaction_id,
-    // paymentInfoStatus: status,
-    // paidAt: Date.now(),
-    // itemsPrice,
-    // taxPrice,
-    // deliveryPrice: product.deliveryPrice,
-    // totalPrice,
-    // orderStatus,
-    // deliveredAt,
-    // firstName,
-    // lastName,
-    // businessName,
-    // userId,
-    // productId,
-    // ownerId: owner.id,
-    // owner: owner.firstName + ' ' + owner.lastName,
-    // store: store.storeName,
-    // business: business.businessName,
-    // };
-    // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
-    // orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
-    // orderInfo.deliveryPrice;
-    // check if customer exist in our database
-    // const owner = await findUserBy({email: customer.email});
-    // check if user have a wallet, else create wallet
-    // await validateUserWallet(owner.id);
-    // create wallet transaction
-    // const walletTransaction = await createWalletTransaction(owner.id, status, currency, amount);
-    // create transaction
-    // const transaction = await createTransaction(owner.id, id,
-    // status, currency, amount, customer);
-    // await updateWallet(owner.id, amount);
-    // const order = await createOrder(orderInfo);
-    // successResponse(res, {...order}, 201);
-    // return res.status(200).json({
-    // success: true,
-    // order,
-    // walletTransaction,
-    // transaction,
-    // });
-    // }
   } catch (error) {
     errorResponse(res, {
       code: error.statusCode,
@@ -975,7 +795,7 @@ export const getMyStoreRaised = async (req, res, next) => {
 export const getMyStoreRevenue = async (req, res, next) => {
   try {
     const sales = await
-    findOrderTotalPriceSum({ownerId: req.params.ownerId});
+    findOrderVendorsPaySum({ownerId: req.params.ownerId});
     // if (!sales) {
       // return errorResponse(res, {
     // code: 401, message:

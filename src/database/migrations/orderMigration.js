@@ -28,7 +28,7 @@ module.exports = {
         allowNull: false,
       },
       phoneNumber: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       email: {
@@ -74,6 +74,11 @@ module.exports = {
         defaultValue: 0,
       },
       deliveryPrice: {
+        type: Sequelize.DOUBLE,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      vendorsPay: {
         type: Sequelize.DOUBLE,
         allowNull: false,
         defaultValue: 0,

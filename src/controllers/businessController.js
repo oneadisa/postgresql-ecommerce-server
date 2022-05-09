@@ -42,7 +42,7 @@ export const getAllBusinesses = async (req, res, next) => {
 export const addBusiness = async (req, res) => {
   try {
     const {businessName, natureOfBusiness, businessEmail,
-      businessAddress, businessType, cacCertURL, userId} = req.body;
+      businessAddress, businessType, cacCertURL, formCO7, userId} = req.body;
     const businessDetails = {
       businessName,
       natureOfBusiness,
@@ -50,6 +50,7 @@ export const addBusiness = async (req, res) => {
       businessAddress,
       businessType,
       cacCertURL,
+      formCO7,
       userId,
     };
     const newBusiness = await createBusiness(businessDetails);

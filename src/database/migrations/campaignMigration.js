@@ -39,7 +39,7 @@ module.exports = {
         allowNull: false,
       },
       phoneNumber: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       investorBrief: {
@@ -58,19 +58,19 @@ module.exports = {
         allowNull: false,
       },
       idealTargetAudienceAge: {
-        type: Sequelize.ENUM,
-        values: ['children', 'youths', 'older'],
+        type: Sequelize.STRING,
+        // values: ['children', 'youths', 'older'],
         allowNull: true,
       },
       idealTargetAudienceHealthIssuesOrDisabilities: {
-        type: Sequelize.ENUM,
-        values: ['physical disabilities', 'addiction issues',
-          'cognitive or learning disabilities'],
+        type: Sequelize.STRING,
+        // values: ['physical disabilities', 'addiction issues',
+        // 'cognitive or learning disabilities'],
         allowNull: true,
       },
       gender: {
-        type: Sequelize.ENUM,
-        values: ['male', 'female', 'gender neutral', 'non-binary'],
+        type: Sequelize.STRING,
+        // values: ['male', 'female', 'gender neutral', 'non-binary'],
         allowNull: true,
       },
       fundingType: {

@@ -21,7 +21,7 @@ export const validateOrder = async (order) => {
         .label('Please provide a country of delivery for your order.'),
     pinCode: Joi.number().required()
         .label('Please provide a pin code for your order.'),
-    phoneNumber: Joi.number().required()
+    phoneNumber: Joi.string().required()
         .label('Please provide a phone number for your order.'),
     productName: Joi.string(),
     price: Joi.number(),
@@ -34,6 +34,7 @@ export const validateOrder = async (order) => {
     itemsPrice: Joi.number(),
     taxPrice: Joi.number(),
     deliveryPrice: Joi.number(),
+    vendorsPay: Joi.number(),
     totalPrice: Joi.number(),
     orderStatus: Joi.string(),
     deliveredAt: Joi.string(),

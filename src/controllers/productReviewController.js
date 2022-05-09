@@ -30,6 +30,7 @@ export const addProductReview = async (req, res) => {
     } = req.body;
     const business = await findBusinessBy({userId});
     const product = await findProductBy({id: productId});
+    console.log(product.userId);
     const user = await findUserBy({id: userId});
     const owner = await findUserBy({id: product.userId});
     if (business) {
@@ -42,7 +43,7 @@ export const addProductReview = async (req, res) => {
         phoneNumber: user.phoneNumber,
         rating,
         productId,
-        ownerId: owner.Id,
+        ownerId: owner.id,
         userId,
       };
       const review = await findProductReviewBy({productId, userId});
@@ -54,7 +55,7 @@ export const addProductReview = async (req, res) => {
       } else {
         const productReview = await createProductReview(productReviewInfo);
         const reviews = await findProductReviewsRating({id: productId});
-        successResponse(res, {...productReview}, productResponse, 201);
+        successResponse(res, {...productReview}, 201);
         console.log(reviews);
       }
     } else {
@@ -78,7 +79,7 @@ export const addProductReview = async (req, res) => {
       } else {
         const productReview = await createProductReview(productReviewInfo);
         const reviews = await findProductReviewsRating({id: productId});
-        successResponse(res, {...productReview}, productResponse, 201);
+        successResponse(res, {...productReview}, 201);
         console.log(reviews);
       }
     }

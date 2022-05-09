@@ -7,7 +7,7 @@ import {
 } from '../services';
 // import cloudinary from 'cloudinary';
 import {createProductImage, findProductImageBy, findProductImagesBy,
-  updateProductImageBy,
+  updateProductImageBy, findProductImagesAndCountBy,
   fetchAllProductImages, deleteProductImage,
   findProrductImagesRating} from '../services';
 
@@ -118,9 +118,13 @@ export const getProductImageDetails = async (req, res) => {
 export const getProductImagesProduct = async (req, res) => {
   try {
     const id = req.params.productId;
-    const productImages = await findProductImagesBy({productId: id});
-    // const userResponse = extractUserData(user);
-    successResponse(res, productImages, 200);
+    const {count, rows}= await findProductImagesAndCountBy({productId: id});
+    return res.status(200).json({
+      success: true,
+      count,
+      rows,
+    });
+    // successResponse(res, productImages, 200);
   } catch (error) {
     errorResponse(res, {code: error.statusCode, message: error.message});
   }

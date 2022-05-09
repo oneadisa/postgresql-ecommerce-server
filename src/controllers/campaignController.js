@@ -104,12 +104,12 @@ export const addCampaign = async (req, res) => {
     campaignInfo.amountToBeRePaidPerPayout =
     (campaignInfo.amountToBeRepaid / campaignInfo.durationPledgedProfit) *
     campaignInfo.repaymentSchedulePledgedProfit;
-    const numWeeks = campaignInfo.duration;
+    // const numWeeks = campaignInfo.duration;
     const now = new Date().getTime();
     const goLive =
   new Date(campaignInfo.goLiveSchedule).getTime() - new Date().getTime();
     campaignInfo.go_ = Math.abs(now);
-    campaignInfo.endDate = goLive + now + numWeeks * 7 * 1000 * 60 * 60 * 24;
+    campaignInfo.endDate = goLive + now + (campaignInfo.duration * 7 * 1000 * 60 * 60 * 24);
     campaignInfo.endDateString = new Date(campaignInfo.endDate).toString();
     // new Date(now + numWeeks * 7 * 1000 * 60 * 60 * 24);
     campaignInfo.endDatePledgedProfit =

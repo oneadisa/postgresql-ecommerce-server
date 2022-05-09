@@ -53,8 +53,8 @@ export const findOrderPriceSum = async (options) => {
    * @return {Promise<object>} A promise object with user detail.
    * @memberof OrderService
    */
-export const findOrderTotalPriceSum = async (options) => {
-  return await Order.sum('totalPrice', {where: options});
+export const findOrderVendorsPaySum = async (options) => {
+  return await Order.sum('vendorsPay', {where: options});
 };
 
 /**

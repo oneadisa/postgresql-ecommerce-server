@@ -31,7 +31,6 @@ export const addProduct = async (req, res) => {
       deliveryPrice,
       category,
       userId,
-      // images,
     } = req.body;
     const store = await findStoreBy({userId});
     let imagesArray = [];
@@ -51,10 +50,12 @@ export const addProduct = async (req, res) => {
       category,
       storeId: store.id,
       userId,
-      // images,
     };
+
     const preProduct = await createProduct(productInfo);
     const imagesLinks = [];
+    console.log(imagesArray);
+
     for (let i = 0; i < imagesArray.length; i++) {
       const result = await cloudinary.uploader.upload(imagesArray[i], {
         folder: 'products',
@@ -64,7 +65,9 @@ export const addProduct = async (req, res) => {
         publicId: result.public_id,
         url: result.secure_url,
       });
+      console.log(imagesLinks);
     }
+
     for (let i = 0; i < imagesLinks.length; i++) {
       const {publicId, url} = imagesLinks[i];
       const productImageInfo = {
@@ -82,13 +85,9 @@ export const addProduct = async (req, res) => {
     const product = await updateProductBy({images: imagesLinks[0].url}, {id: preProduct.id});
     const {count, rows} = await
     findProductImagesAndCountBy({productId: preProduct.id});
-    // req.body.images = imagesLinks;
-    // req.body.user = req.user.id;
-    // const product = await Product.create(req.body);
-    // successResponse(res, {...product}, 201);
+
     return res.status(200).json({
       success: true,
-      // result,
       preProduct,
       product,
       productImages: {
@@ -102,16 +101,6 @@ export const addProduct = async (req, res) => {
       message: error.message,
     });
   }
-
-//   try {
-  // const {body} = req;
-  // const product = await createProduct(body);
-  // successResponse(res, {...product}, 201);
-//   } catch (error) {
-  // errorResponse(res, {
-  //   message: error.message,
-  // });
-//   }
 };
 
 /**

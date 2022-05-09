@@ -41,9 +41,7 @@ export const walletBalance = async (req, res, next) => {
       return successResponse(res, wallet, 200);
     }
     // user
-    return res.status(200).json(
-        {response: 'success',
-          balance: userWallet.balance});
+    return successResponse(res, userWallet, 200);
   } catch (error) {
     errorResponse(res, {
       message: error.message,

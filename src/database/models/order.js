@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     phoneNumber: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     email: {
@@ -67,6 +67,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0,
     },
     deliveryPrice: {
+      type: DataTypes.DOUBLE,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    vendorsPay: {
       type: DataTypes.DOUBLE,
       allowNull: false,
       defaultValue: 0,

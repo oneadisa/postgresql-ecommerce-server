@@ -250,6 +250,7 @@ export const extractBusinessData = (business) => {
     businessAddress: business.businessAddress,
     businessType: business.businessType,
     cacCertURL: business.cacCertURL,
+    formCO7: business.formCO7,
     userId: business.userId,
     createdAt: business.createdAt,
     updatedAt: business.updatedAt,
@@ -265,6 +266,7 @@ export const extractBusinessData = (business) => {
 */
 export const extractStoreData = (store) => {
   return {
+    id: store.id,
     storeName: store.storeName,
     storeTagline: store.storeTagline,
     storeDescription: store.storeDescription,
@@ -289,9 +291,11 @@ export const extractStoreData = (store) => {
 */
 export const extractProductData = (product) => {
   return {
+    id: product.id,
     productTitle: product.productTitle,
     shortDescription: product.shortDescription,
     productDetails: product.productDetails,
+    images: product.images,
     discountedPrice: product.discountedPrice,
     price: product.price,
     productUnitCount: product.productUnitCount,
@@ -316,6 +320,7 @@ export const extractProductData = (product) => {
 */
 export const extractProductReviewData = (productReview) => {
   return {
+    id: productReview.id,
     comment: productReview.comment,
     firstName: productReview.firstName,
     lastName: productReview.lastName,
@@ -338,6 +343,7 @@ export const extractProductReviewData = (productReview) => {
 */
 export const extractOrderData = (order) => {
   return {
+    id: order.id,
     address: order.address,
     city: order.city,
     state: order.state,
@@ -355,6 +361,7 @@ export const extractOrderData = (order) => {
     itemsPrice: order.itemsPrice,
     taxPrice: order.taxPrice,
     deliveryPrice: order.deliveryPrice,
+    vendorsPay: order.vendorsPay,
     totalPrice: order.totalPrice,
     orderStatus: order.orderStatus,
     deliveredAt: order.deliveredAt,
@@ -380,6 +387,7 @@ export const extractOrderData = (order) => {
 */
 export const extractCampaignData = (campaign) => {
   return {
+    id: campaign.id,
     campaignName: campaign.campaignName,
     natureOfBusiness: campaign.natureOfBusiness,
     campaignCategory: campaign.campaignCategory,
@@ -440,6 +448,7 @@ export const extractCampaignData = (campaign) => {
 */
 export const extractCampaignReviewData = (campaignReview) => {
   return {
+    id: campaignReview.id,
     comment: campaignReview.comment,
     firstName: campaignReview.firstName,
     lastName: campaignReview.lastName,
@@ -460,6 +469,7 @@ export const extractCampaignReviewData = (campaignReview) => {
 */
 export const extractDonationData = (donation) => {
   return {
+    id: donation.id,
     amount: donation.amount,
     firstName: donation.firstName,
     lastName: donation.lastName,
@@ -488,6 +498,7 @@ export const extractDonationData = (donation) => {
 */
 export const extractProductImageData = (productImage) => {
   return {
+    id: productImage.id,
     publicId: productImage.publicId,
     url: productImage.url,
     userId: productImage.userId,
@@ -507,6 +518,7 @@ export const extractProductImageData = (productImage) => {
 */
 export const extractWalletData = (wallet) => {
   return {
+    id: wallet.id,
     userId: wallet.userId,
     balance: wallet.balance,
     createdAt: wallet.createdAt,
@@ -524,6 +536,7 @@ export const extractWalletData = (wallet) => {
 */
 export const extractPayoutData = (payout) => {
   return {
+    id: payout.id,
     amount: payout.amount,
     firstName: payout.firstName,
     lastName: payout.lastName,

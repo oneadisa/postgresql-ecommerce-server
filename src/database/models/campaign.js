@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     phoneNumber: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     investorBrief: {
@@ -51,19 +51,19 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     idealTargetAudienceAge: {
-      type: DataTypes.ENUM,
-      values: ['children', 'youths', 'older'],
+      type: DataTypes.STRING,
+      // values: ['children', 'youths', 'older'],
       allowNull: true,
     },
     idealTargetAudienceHealthIssuesOrDisabilities: {
-      type: DataTypes.ENUM,
-      values: ['physical disabilities', 'addiction issues',
-        'cognitive or learning disabilities'],
+      type: DataTypes.STRING,
+      // values: ['physical disabilities', 'addiction issues',
+      // 'cognitive or learning disabilities'],
       allowNull: true,
     },
     gender: {
-      type: DataTypes.ENUM,
-      values: ['male', 'female', 'gender neutral', 'non-binary'],
+      type: DataTypes.STRING,
+      // values: ['male', 'female', 'gender neutral', 'non-binary'],
       allowNull: true,
     },
     fundingType: {

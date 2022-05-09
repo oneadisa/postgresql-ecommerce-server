@@ -11,10 +11,9 @@ import ApiError from '../utils/apiError';
 export const validateBusiness = async (business) => {
   // Joi parameters to test against user inputs
   const schema = Joi.object({
-    businessName: Joi.string().alphanum().required()
+    businessName: Joi.string().required()
         .label('Please enter a valid businessName'),
-    natureOfBusiness: Joi.string().alphanum().required()
-        .label('Please provide a valid nature of business'),
+    natureOfBusiness: Joi.string(),
     businessEmail: Joi.string().email().required()
         .label('Please entere a valid email address'),
     businessAddress: Joi.string().required()
@@ -25,6 +24,7 @@ export const validateBusiness = async (business) => {
         .label('Please enter a business type between (LLC, sole' +
         ' proprietorship, unregistered)'),
     cacCertURL: Joi.string(),
+    formCO7: Joi.string(),
     userId: Joi.number(),
   });
   const {error} = await schema.validateAsync(business);
