@@ -11,11 +11,48 @@ import db from '../database/models';
 const {Wallet} = db;
 const {creditAccount, debitAccount} = require( '../utils/transfer');
 const {v4} = require('uuid');
-const path = require('path');
+// const path = require('path');
 import axios from 'axios';
-// import got from 'got';
+const crypto = require('crypto');
+const secret = process.env.PAYSTACK_PRIVATE_KEY;
 require('dotenv').config();
 
+
+/**
+ * Get Wallet balance
+ *
+ * @param {Request} req The request from the endpoint.
+ * @param {Response} res The response returned by the method.
+ * @param {Response} next The response returned by the method.
+ * @memberof WalletController
+ * @return {JSON} A JSON response with the registered
+ *  wallet's details and a JWT.
+ */
+export const webhook = async (req, res, next) => {
+  try {
+    // validate event
+    const hash = crypto.createHmac('sha512', secret).update(JSON.stringify(req.body)).digest('hex');
+    if (hash == req.headers['x-paystack-signature']) {
+      // Retrieve the request's body
+      const event = req.body;
+      // Do something with event
+      if (event.event === 'transfer.success') {
+        const walletResponse = await getWithdrawResponse(event);
+        return successResponse(res, {...walletResponse}, 201);
+      } else if (event.event === 'charge.success') {
+        const walletResponse = await getFundResponse(event);
+        return successResponse(res, {...walletResponse}, 201);
+      } else {
+        console.log(event);
+      }
+    }
+    res.send(200);
+  } catch (error) {
+    errorResponse(res, {
+      message: error.message,
+    });
+  }
+};
 
 /**
  * Get Wallet balance
@@ -108,50 +145,123 @@ export const fw = async (req, res, next) => {
  */
 export const fund = async (req, res, next) => {
   try {
-    return res.sendFile(path.join(__dirname + '../../../flutter.html'));
+    // return res.sendFile(path.join(__dirname + '../../../flutter.html'));
     // __dirname : It will resolve to your project folder.
-    // const {
-    // amount,
-    // userId,
-    // } = req.body;
-    // const user = await findUserBy({id: userId});
-    // console.log(user);
-    // const fundData = ({
-    // 'tx_ref': Date.now(),
-    // 'amount': amount,
-    // 'currency': 'NGN',
-    // 'redirect_url': 'http://localhost:8080/api/wallet/fund/response',
-    // 'meta': {
-    // 'consumer_id': user.id,
-    // 'consumer_mac': '92a3-912ba-1192a',
-    // },
-    // 'customer': {
-    // 'email': user.email,
-    // 'phone_number': user.phoneNumber,
-    // 'name': user.firstName+' '+user.lastName,
-    // },
-    // 'customizations': {
-    // 'title': 'Gaged Payments',
-    // 'logo': 'https://www.linkpicture.com/q/Gaged-Blue.svg',
-    // },
-    // });
-    // console.log(fundData);
-    // const config = {
-    // method: 'post',
-    // url: 'https://api.flutterwave.com/v3/payments',
-    // headers: {
-    // 'Content-Type': 'application/json',
-    // 'Accept': 'application/json',
-    // 'Authorization': `Bearer ${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
-    // },
-    // data: fundData,
-    // };
+    const {
+      amount,
+      userId,
+    } = req.body;
+    const user = await findUserBy({id: userId});
+    console.log(user);
+    const fundData = JSON.stringify({
+      'amount': amount,
+      'email': user.email,
+      'reference': Date.now(),
+      'currency': 'NGN',
+      'callback_url': 'http://localhost:8080/api/wallet/fund/response',
+      'metadata': {
+        'consumer_id': user.id,
+        'customer': {
+          'email': user.email,
+          'phone': user.phoneNumber,
+          'name': user.firstName + ' ' + user.lastName,
+        },
+      },
+    });
+    console.log(fundData);
+    const config = {
+      method: 'post',
+      url: 'https://api.paystack.co/transaction/initialize',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+      data: fundData,
+    };
 
-    // const preResponse = await axios(config);
-    // console.log(preResponse);
-    // const response = preResponse.data;
+    const initialise = await axios(config);
+    console.log(initialise);
+
+    const verify = {
+      method: 'get',
+      url: `https://api.paystack.co/transaction/verify/${initialise.data.data.reference}`,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+    };
+    const finalise = await axios(verify);
+    console.log(finalise);
+    const walletResponse = await getFundResponse(finalise);
+    return successResponse(res, {...walletResponse}, 201);
+    // const response = finalise.data;
     // return res.redirect(response.data.link);
     // return successResponse(res, {...response}, 201);
+  } catch (err) {
+    errorResponse(res, {
+      message: err.message,
+    });
+  }
+};
+
+/**
+ * Payment controller
+ *
+ * @param {Request} req The request from the endpoint.
+ * @param {Response} res The response returned by the method.
+ * @param {Response} next The response returned by the method.
+ * @memberof WalletController
+ * @return {JSON} A JSON response with the registered
+ *  wallet's details and a JWT.
+ */
+export const fundFlutter = async (req, res, next) => {
+  try {
+    // return res.sendFile(path.join(__dirname + '../../../flutter.html'));
+    // __dirname : It will resolve to your project folder.
+    const {
+      amount,
+      userId,
+    } = req.body;
+    const user = await findUserBy({id: userId});
+    console.log(user);
+    const fundData = ({
+      'tx_ref': Date.now(),
+      'amount': amount,
+      'currency': 'NGN',
+      'redirect_url': 'http://localhost:8080/api/wallet/fund/response',
+      'meta': {
+        'consumer_id': user.id,
+        'consumer_mac': '92a3-912ba-1192a',
+      },
+      'customer': {
+        'email': user.email,
+        'phone_number': user.phoneNumber,
+        'name': user.firstName+' '+user.lastName,
+      },
+      'customizations': {
+        'title': 'Gaged Payments',
+        'logo': 'https://www.linkpicture.com/q/Gaged-Blue.svg',
+      },
+    });
+    console.log(fundData);
+    const config = {
+      method: 'post',
+      url: 'https://api.flutterwave.com/v3/payments',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.FLUTTERWAVE_V3_SECRET_KEY}`,
+      },
+      data: fundData,
+    };
+
+    const preResponse = await axios(config);
+    console.log(preResponse);
+    const response = preResponse.data;
+    return res.redirect(response.data.link);
+    return successResponse(res, {...response}, 201);
   } catch (err) {
     errorResponse(res, {
       message: err.message,
@@ -169,6 +279,93 @@ export const fund = async (req, res, next) => {
  *  wallet's details and a JWT.
  */
 export const withdraw = async (req, res) => {
+  try {
+    const {
+      account_bank,
+      account_number,
+      amount,
+      email,
+    } = req.body;
+
+    const transferData = JSON.stringify({
+      'account_bank': account_bank,
+      'account_number': account_number,
+      'amount': amount,
+      'metadata': {
+        'email': email,
+      },
+    });
+    console.log(transferData);
+    console.log(account_bank);
+    console.log(account_number);
+    const verify = await axios({
+      url: `https://api.paystack.co/bank/resolve?account_number=${account_number}&bank_code=${account_bank}`,
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+    });
+    console.log(verify);
+
+    const recipient = await axios({
+      url: `https://api.paystack.co/transferrecipient`,
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+      data: JSON.stringify({
+        'type': 'nuban',
+        'name': verify.data.data.account_name,
+        'account_number': verify.data.data.account_number,
+        'bank_code': account_bank,
+        'currency': 'NGN',
+      }),
+    });
+    console.log(recipient);
+    const initiate = await axios({
+      url: `https://api.paystack.co/transfer`,
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+      data: JSON.stringify({
+        'source': 'balance',
+        'reason': 'Withdrawal from Gaged Wallet',
+        'amount': amount,
+        'recipient': recipient.data.data.recipient_code,
+      }),
+    });
+
+    console.log(initiate);
+    const response = initiate.data;
+    // const walletResponse = await getWithdrawResponse(response);
+    return successResponse(res, {...response}, 201);
+    // return res.status(200).json({
+    // response,
+    // });
+  } catch (error) {
+    errorResponse(res, {
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Withraw controller
+ *
+ * @param {Request} req The request from the endpoint.
+ * @param {Response} res The response returned by the method.
+ * @memberof WalletController
+ * @return {JSON} A JSON response with the registered
+ *  wallet's details and a JWT.
+ */
+export const withdrawFlutter = async (req, res) => {
   try {
     const {
       account_bank,
@@ -242,6 +439,49 @@ export const withdraw = async (req, res) => {
 };
 
 
+export const getFundResponse = async (response) => {
+  try {
+    console.log(response);
+    const {currency, id, amount} = response.data.data;
+    const {status} = response.data.data;
+    const {customer} = response.data.data.metadata;
+
+    // check if transaction id already exist
+    const transactionExist = await findTransactionBy({transactionId: id});
+
+    if (transactionExist) {
+      return ('Sorry, This Transaction Already Exists.');
+    }
+
+    // check if customer exist in our database
+    const user = await findUserBy({email: customer.email});
+
+    // check if user have a wallet, else create wallet
+    await validateUserWallet(user.id);
+
+    // create wallet transaction
+    const walletTransaction = await createWalletTransaction(user.id, status, currency, amount);
+
+    // create transaction
+    const transaction = await createTransaction(user.id, id, status, currency, amount, customer);
+
+    const wallet = await updateWallet(user.id, amount);
+
+    return ({
+      response: 'wallet funded successfully',
+      data: wallet,
+      walletTransaction,
+      transaction,
+    });
+
+    // successResponse(res, {...wallets}, 201);
+  } catch (error) {
+    errorResponse(res, {
+      message: error.message,
+    });
+  }
+};
+
 /**
  * Get payment response modal
  *
@@ -252,7 +492,74 @@ export const withdraw = async (req, res) => {
  * @return {JSON} A JSON response with the registered
  *  wallet's details and a JWT.
  */
-export const getFundResponse = async (req, res, next) => {
+export const getFundResponsePaystack = async (req, res, next) => {
+  try {
+    const {reference} = req.query;
+    // URL with transaction ID of which will be used to confirm
+    //  transaction status
+    const url = `https://api.paystack.co/transaction/verify/${reference}`;
+    // Network call to confirm transaction status
+    const response = await axios({
+      url,
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+    });
+    console.log(response.data);
+
+    const {currency, id, amount, status} = response.data.data;
+    const {customer} = response.data.data.metadata;
+
+    // check if transaction id already exist
+    const transactionExist = await findTransactionBy({transactionId: id});
+
+    if (transactionExist) {
+      return res.status(409).send('Sorry, This Transaction Already Exists.');
+    }
+
+    // check if customer exist in our database
+    const user = await findUserBy({email: customer.email});
+
+    // check if user have a wallet, else create wallet
+    await validateUserWallet(user.id);
+
+    // create wallet transaction
+    const walletTransaction = await createWalletTransaction(user.id, status, currency, amount);
+
+    // create transaction
+    const transaction = await createTransaction(user.id, id, status, currency, amount, customer);
+
+    const wallet = await updateWallet(user.id, amount);
+
+    return res.status(200).json({
+      response: 'wallet funded successfully',
+      data: wallet,
+      walletTransaction,
+      transaction,
+    });
+
+    // successResponse(res, {...wallets}, 201);
+  } catch (error) {
+    errorResponse(res, {
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Get payment response modal
+ *
+ * @param {Request} req The request from the endpoint.
+ * @param {Response} res The response returned by the method.
+ * @param {Response} next The response returned by the method.
+ * @memberof WalletController
+ * @return {JSON} A JSON response with the registered
+ *  wallet's details and a JWT.
+ */
+export const getFundResponseFlutter = async (req, res, next) => {
   try {
     const {transaction_id} = req.query;
 
@@ -334,7 +641,8 @@ const getWithdrawResponse = async (response) => {
 
     console.log(response);
 
-    const {currency, id, amount, meta} = response.data;
+    const {currency, id, amount} = response.data;
+    const {metadata} = response.data.recipient;
     const {status} = response.data;
 
     // check if transaction id already exist
@@ -345,7 +653,7 @@ const getWithdrawResponse = async (response) => {
     }
 
     // check if customer exist in our database
-    const user = await findUserBy({email: meta.email});
+    const user = await findUserBy({email: metadata.email});
 
     // check if user have a wallet, else create wallet
     const wallet = await validateUserWallet(user.id);
@@ -606,40 +914,40 @@ const validateUserWallet = async (userId) => {
 
 // Create Wallet Transaction
 const createWalletTransaction =
- async (userId, status, currency, amount)=> {
-   try {
-     const wallet = await findWalletBy({userId});
-     // create wallet transaction
-     const walletTransaction = await addWalletTransaction({
-       amount,
-       userId,
-       isInflow: true,
-       balanceBefore: Number(wallet.balance),
-       balanceAfter: Number(wallet.balance) + Number(amount),
-       currency,
-       status,
-     });
-     return walletTransaction;
-   } catch (error) {
-     console.log(error);
-     //  errorResponse(res, {
-     //    message: error.message,
-     //  });
-   }
- };
-
-// Create Wallet Transaction
-const createDebitWalletTransaction =
-  async (userId, currency, amount) => {
+  async (userId, status, currency, amount)=> {
     try {
       const wallet = await findWalletBy({userId});
       // create wallet transaction
       const walletTransaction = await addWalletTransaction({
-        amount,
+        amount: Number(amount)/100,
+        userId,
+        isInflow: true,
+        balanceBefore: Number(wallet.balance),
+        balanceAfter: Number(wallet.balance) + Number(amount)/100,
+        currency,
+        status: 'successful',
+      });
+      return walletTransaction;
+    } catch (error) {
+      console.log(error);
+      //  errorResponse(res, {
+      //    message: error.message,
+      //  });
+    }
+  };
+
+// Create Wallet Transaction
+const createDebitWalletTransaction =
+  async (userId, status, currency, amount) => {
+    try {
+      const wallet = await findWalletBy({userId});
+      // create wallet transaction
+      const walletTransaction = await addWalletTransaction({
+        amount: Number(amount)/100,
         userId,
         isInflow: false,
         balanceBefore: Number(wallet.balance),
-        balanceAfter: Number(wallet.balance) - Number(amount),
+        balanceAfter: Number(wallet.balance) - Number(amount)/100,
         currency,
         status: 'successful',
       });
@@ -670,13 +978,13 @@ const createTransaction = async (
       transactionId: id,
       name: customer.name,
       email: customer.email,
-      phone: customer.phoneNumber,
-      amount,
+      phone: customer.phone,
+      amount: Number(amount)/100,
       currency,
       balanceBefore: Number(wallet.balance),
-      balanceAfter: Number(wallet.balance) + Number(amount),
+      balanceAfter: Number(wallet.balance) + Number(amount)/100,
       paymentStatus: status,
-      paymentGateway: 'flutterwave',
+      paymentGateway: 'paystack',
     });
     return transaction;
   } catch (error) {
@@ -705,10 +1013,10 @@ const createDebitTransaction = async (
       name: customer.firstName+' '+customer.lastName,
       email: customer.email,
       phone: customer.phoneNumber,
-      amount,
+      amount: Number(amount)/100,
       currency,
       balanceBefore: Number(wallet.balance),
-      balanceAfter: Number(wallet.balance) - Number(amount),
+      balanceAfter: Number(wallet.balance) - Number(amount)/100,
       paymentStatus: status,
       paymentGateway: 'flutterwave',
     });
@@ -726,8 +1034,9 @@ const updateWallet = async (userId, amount) => {
   try {
     // update wallet
     const wallet = await findWalletBy({userId});
+    const increment = Number(amount)/100;
     const newWallet = await wallet.increment(
-        'balance', {by: amount},
+        'balance', {by: increment},
     );
     return newWallet;
   } catch (error) {
@@ -743,8 +1052,9 @@ const deductWallet = async (userId, amount) => {
   try {
     // update wallet
     const wallet = await findWalletBy({userId});
+    const decrement = Number(amount)/100;
     const newWallet = await wallet.decrement(
-        'balance', {by: amount},
+        'balance', {by: decrement},
     );
     return newWallet;
   } catch (error) {

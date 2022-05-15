@@ -16,7 +16,7 @@ router.route('/all').get(getAllOrders);
 
 router
     .route('/create')
-    .get(addCashOrder);
+    .post(addCashOrder);
 router
     .route('/create/callback')
     .get(addCashOrderCallback);

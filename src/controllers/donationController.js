@@ -10,7 +10,7 @@ import {createDonation, findDonationBy, findDonationsAndCountBy,
 } from '../services';
 import {
   createWallet, findWalletBy,
-  addWalletTransaction,
+  addWalletTransaction, addTransaction,
 } from '../services';
 const {creditRepaymentAccount, debitRepaymentAccount, debitAccount, creditAccount} = require( '../utils/transfer');
 const {v4} = require('uuid');
@@ -27,6 +27,510 @@ import axios from 'axios';
            *  details.
            */
 export const addDonationCash = async (req, res) => {
+  try {
+    const {
+      amount,
+      campaignId,
+      userId,
+    } = req.body;
+
+    const user = await findUserBy({id: userId});
+    console.log(user);
+    const fundData = JSON.stringify({
+      'amount': amount,
+      'email': user.email,
+      'reference': Date.now(),
+      'currency': 'NGN',
+      'callback_url': 'http://localhost:8080/api/wallet/fund/response',
+      'metadata': {
+        'consumer_id': user.id,
+        'customer': {
+          'email': user.email,
+          'phone': user.phoneNumber,
+          'name': user.firstName + ' ' + user.lastName,
+        },
+        'campaignId': campaignId,
+      },
+    });
+    console.log(fundData);
+    const config = {
+      method: 'post',
+      url: 'https://api.paystack.co/transaction/initialize',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+      data: fundData,
+    };
+
+    const initialise = await axios(config);
+    console.log(initialise);
+
+    const verify = {
+      method: 'get',
+      url: `https://api.paystack.co/transaction/verify/${initialise.data.data.reference}`,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+    };
+    const finalise = await axios(verify);
+    console.log(finalise);
+
+    const {currency, id, status} = finalise.data.data;
+    const {customer} = finalise.data.data.metadata;
+    // check if transaction id already exist
+    const transactionExist = await findTransactionBy({transactionId: id});
+    if (transactionExist) {
+      return res.status(409).send('Sorry, This Transaction Already Exists.');
+    }
+
+
+    const business = await findBusinessBy({userId});
+    console.log(business);
+    const campaign = await findCampaignBy({id: campaignId});
+    const recipient = await findUserBy({id: campaign.userId});
+    const campaignOwner = await findUserBy({id: campaign.userId});
+    const campaignBusiness = await findBusinessBy({userId: campaign.userId});
+    console.log(campaignBusiness);
+
+    const repaymentTime = Math.abs(
+        campaign.endDatePledgedProfit - campaign.endDate,
+    );
+    const numberOfRepayments = repaymentTime / campaign.timePerPayment;
+    const numberOfTimesPaidAlready =
+        repaymentTime / campaign.timePerPayment - numberOfRepayments;
+    const amountRepay =
+        Number(amount)/100 +
+        (campaign.pledgedProfitToLenders / 100) * Number(amount)/100;
+    console.log(amountRepay);
+    console.log(repaymentTime);
+    console.log(campaign.timePerPayment);
+    const amountAlreadyRaise =
+        (numberOfTimesPaidAlready *
+          ((campaign.pledgedProfitToLenders / 100) * Number(amount)/100)) /
+        (repaymentTime / campaign.timePerPayment);
+
+    const schedule = repaymentTime / campaign.timePerPayment;
+    console.log(schedule);
+    const amountPerTime = amountRepay / (repaymentTime / campaign.timePerPayment);
+    if (business) {
+      const donationInfo = {
+        amount: Number(amount) / 100,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        businessName: business.businessName,
+        amountToBeRepaid: amountRepay,
+        type: campaign.fundingType,
+        amountToBeRepaidPerTime: amountPerTime,
+        amountAlreadyRepaid: amountAlreadyRaise,
+        firstPaymentDate: campaign.firstPaymentDate,
+        lastPaymentDate: campaign.endDatePledgedProfit,
+        campaignName: campaign.campaignName,
+        ownerLogo: campaign.ownerLogo,
+        investorBrief: campaign.investorBrief,
+        campaignId,
+        recipientId: recipient.id,
+        userId,
+      };
+
+      const payoutInfo = {
+        amount: amountPerTime,
+        firstName: campaignOwner.firstName,
+        lastName: campaignOwner.lastName,
+        businessName: campaignBusiness.businessName,
+        amountToBeRepaid: amountRepay,
+        type: campaign.fundingType,
+        amountToBeRepaidPerTime: amountPerTime,
+        amountAlreadyRepaid: amountAlreadyRaise,
+        firstPaymentDate: campaign.firstPaymentDate,
+        lastPaymentDate: campaign.endDatePledgedProfit,
+        campaignName: campaign.campaignName,
+        ownerLogo: campaign.ownerLogo,
+        investorBrief: campaign.investorBrief,
+        campaignId,
+        recipientId: userId,
+        userId,
+      };
+      // check if customer exist in our database
+      // const recipient = await findUserBy({email: customer.email});
+      // check if user have a wallet, else create wallet
+      await validateUserWallet(recipient.id);
+      // create wallet transaction
+      const walletTransaction = await createWalletTransaction(recipient.id, status, currency, amount);
+      // create transaction
+      await createTransaction(recipient.id, id, status, currency, amount, customer);
+      await updateWallet(recipient.id, amount);
+      const donation = await createDonation(donationInfo);
+      let counter = 1;
+      const payoutDelay = campaign.endDate - new Date().getTime();
+
+      const newPayout = async () => {
+        const reference = v4();
+        const summary = 'Loan Repayment';
+        // check if owner has a wallet, else create wallet
+        await validateUserWallet(userId);
+        await Promise.all([
+          debitRepaymentAccount(
+              {
+                amountPerTime, userId: recipient.id, purpose: 'Repayment to investor', reference, summary,
+                trnxSummary: `TRFR TO: ${userId}. TRNX REF:${reference} `,
+              }),
+          creditRepaymentAccount(
+              {
+                amountPerTime, userId: userId, purpose: `Return on investment in ${campaign.campaignName}`, reference, summary,
+                trnxSummary: `TRFR FROM: ${recipient.id}. TRNX REF:${reference} `,
+              }),
+        ]);
+        createPayout(payoutInfo);
+        console.log('Payout number ' + counter);
+        if (counter < numberOfRepayments) {
+          counter++;
+          setTimeout(newPayout, campaign.timePerPayment);
+        }
+      };
+      const triggerPayout = () => setTimeout(
+          newPayout
+          , payoutDelay);
+      await triggerPayout();
+      return res.status(200).json({
+        success: true,
+        donation,
+        walletTransaction,
+      });
+      // successResponse(res, {...donation}, 201);
+    } else {
+      const donationInfo = {
+        amount: Number(amount) / 100,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        amountToBeRepaid: amountRepay,
+        type: campaign.fundingType,
+        amountToBeRepaidPerTime: amountPerTime,
+        amountAlreadyRepaid: amountAlreadyRaise,
+        firstPaymentDate: campaign.firstPaymentDate,
+        lastPaymentDate: campaign.endDatePledgedProfit,
+        campaignName: campaign.campaignName,
+        ownerLogo: campaign.ownerLogo,
+        investorBrief: campaign.investorBrief,
+        campaignId,
+        recipientId: recipient.id,
+        userId,
+      };
+      const payoutInfo = {
+        amount: amountPerTime,
+        firstName: campaignOwner.firstName,
+        lastName: campaignOwner.lastName,
+        businessName: campaignBusiness.businessName,
+        amountToBeRepaid: amountRepay,
+        type: campaign.fundingType,
+        amountToBeRepaidPerTime: amountPerTime,
+        amountAlreadyRepaid: amountAlreadyRaise,
+        firstPaymentDate: campaign.firstPaymentDate,
+        lastPaymentDate: campaign.endDatePledgedProfit,
+        campaignName: campaign.campaignName,
+        ownerLogo: campaign.ownerLogo,
+        investorBrief: campaign.investorBrief,
+        campaignId,
+        recipientId: userId,
+        userId,
+      };
+      // check if customer exist in our database
+      // const recipient = await findUserBy({email: customer.email});
+      // check if user have a wallet, else create wallet
+      await validateUserWallet(recipient.id);
+      // create wallet transaction
+      const walletTransaction = await createWalletTransaction(recipient.id, status, currency, amount);
+      // create transaction
+      await createTransaction(recipient.id, id, status, currency, amount, customer);
+      await updateWallet(recipient.id, amount);
+      const donation = await createDonation(donationInfo);
+      let counter = 1;
+      const payoutDelay = campaign.endDate - new Date().getTime();
+
+      const newPayout = async ()=> {
+        const reference = v4();
+        const summary = 'Loan Repayment';
+        // check if owner has a wallet, else create wallet
+        await validateUserWallet(userId);
+        await Promise.all([
+          debitRepaymentAccount(
+              {amountPerTime, userId: recipient.id, purpose: 'Repayment to investor', reference, summary,
+                trnxSummary: `TRFR TO: ${userId}. TRNX REF:${reference} `}),
+          creditRepaymentAccount(
+              {amountPerTime, userId: userId, purpose: `Return on investment in ${campaign.campaignName}`, reference, summary,
+                trnxSummary: `TRFR FROM: ${recipient.id}. TRNX REF:${reference} `}),
+        ]);
+        createPayout(payoutInfo);
+        console.log('Payout number ' +counter);
+        if (counter < numberOfRepayments) {
+          counter++;
+          setTimeout(newPayout, campaign.timePerPayment);
+        }
+      };
+
+      const triggerPayout = () => setTimeout( newPayout
+          , payoutDelay);
+      await triggerPayout();
+      return res.status(200).json({
+        success: true,
+        donation,
+        walletTransaction,
+      });
+    }
+  } catch (error) {
+    errorResponse(res, {
+      code: error.statusCode,
+      message: error.message,
+    });
+  }
+};
+
+/**
+           * Creates a new Donation from Payment portal.
+           *
+           * @param {Request} req The request from the endpoint.
+           * @param {Response} res TheyId response returned by the method.
+           * @memberof DonationController
+           * @return {JSON} A JSON response with the created Donation's
+           *  details.
+           */
+export const addDonationCallback = async (req, res) => {
+  try {
+    const {reference} = req.query;
+    // URL with transaction ID of which will be used to confirm
+    //  transaction status
+    const url = `https://api.paystack.co/transaction/verify/${reference}`;
+    // Network call to confirm transaction status
+    const response = await axios({
+      url,
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+    });
+    console.log(response.data);
+    const {currency, id, amount} = response.data.data;
+    const {status} = response.data.data;
+    // check if transaction id already exist
+    const transactionExist = await findTransactionBy({transactionId: id});
+    if (transactionExist) {
+      return res.status(409).send('Sorry, This Transaction Already Exists.');
+    }
+
+    const {
+      campaignId,
+      userId,
+      customer,
+    } = response.data.data.metadata;
+    const user = await findUserBy({id: userId});
+    const business = await findBusinessBy({userId});
+    const campaign = await findCampaignBy({id: campaignId});
+    const recipient = await findUserBy({id: campaign.userId});
+    const campaignOwner = await findUserBy({id: campaign.userId});
+    const campaignBusiness = await findBusinessBy({userId: campaign.userId});
+
+    const repaymentTime = Math.abs(
+        campaign.endDatePledgedProfit - campaign.endDate,
+    );
+    const numberOfRepayments = repaymentTime / campaign.timePerPayment;
+    const numberOfTimesPaidAlready =
+        repaymentTime / campaign.timePerPayment - numberOfRepayments;
+    const amountRepay =
+        Number(amount)/100 +
+        (campaign.pledgedProfitToLenders / 100) * Number(amount)/100;
+    const amountAlreadyRaise =
+        (numberOfTimesPaidAlready *
+          ((campaign.pledgedProfitToLenders / 100) * Number(amount)/100)) /
+        (repaymentTime / campaign.timePerPayment);
+
+    const amountPerTime = amountRepay / (repaymentTime / campaign.timePerPayment);
+    if (business) {
+      const donationInfo = {
+        amount: Number(amount)/100,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        businessName: business.businessName,
+        amountToBeRepaid: amountRepay,
+        type: campaign.fundingType,
+        amountToBeRepaidPerTime: amountPerTime,
+        amountAlreadyRepaid: amountAlreadyRaise,
+        firstPaymentDate: campaign.firstPaymentDate,
+        lastPaymentDate: campaign.endDatePledgedProfit,
+        campaignName: campaign.campaignName,
+        ownerLogo: campaign.ownerLogo,
+        investorBrief: campaign.investorBrief,
+        campaignId,
+        recipientId: recipient.id,
+        userId,
+      };
+
+      const payoutInfo = {
+        amount: amountPerTime,
+        firstName: campaignOwner.firstName,
+        lastName: campaignOwner.lastName,
+        businessName: campaignBusiness.businessName,
+        amountToBeRepaid: amountRepay,
+        type: campaign.fundingType,
+        amountToBeRepaidPerTime: amountPerTime,
+        amountAlreadyRepaid: amountAlreadyRaise,
+        firstPaymentDate: campaign.firstPaymentDate,
+        lastPaymentDate: campaign.endDatePledgedProfit,
+        campaignName: campaign.campaignName,
+        ownerLogo: campaign.ownerLogo,
+        investorBrief: campaign.investorBrief,
+        campaignId,
+        recipientId: userId,
+        userId,
+      };
+      // check if customer exist in our database
+      // const recipient = await findUserBy({email: customer.email});
+      // check if user have a wallet, else create wallet
+      await validateUserWallet(recipient.id);
+      // create wallet transaction
+      const walletTransaction = await createWalletTransaction(recipient.id, status, currency, amount);
+      // create transaction
+      await createTransaction(recipient.id, id, status, currency, amount, customer);
+      await updateWallet(recipient.id, amount);
+      const donation = await createDonation(donationInfo);
+      let counter = 1;
+      const payoutDelay = campaign.endDate - new Date().getTime();
+
+      const newPayout = async () => {
+        const reference = v4();
+        const summary = 'Loan Repayment';
+        // check if owner has a wallet, else create wallet
+        await validateUserWallet(userId);
+        await Promise.all([
+          debitRepaymentAccount(
+              {
+                amountPerTime, userId: recipient.id, purpose: 'Repayment to investor', reference, summary,
+                trnxSummary: `TRFR TO: ${userId}. TRNX REF:${reference} `,
+              }),
+          creditRepaymentAccount(
+              {
+                amountPerTime, userId: userId, purpose: `Return on investment in ${campaign.campaignName}`, reference, summary,
+                trnxSummary: `TRFR FROM: ${recipient.id}. TRNX REF:${reference} `,
+              }),
+        ]);
+        createPayout(payoutInfo);
+        console.log('Payout number ' + counter);
+        if (counter < numberOfRepayments) {
+          counter++;
+          setTimeout(newPayout, campaign.timePerPayment);
+        }
+      };
+      const triggerPayout = () => setTimeout(
+          newPayout
+          , payoutDelay);
+      await triggerPayout();
+      return res.status(200).json({
+        success: true,
+        donation,
+        walletTransaction,
+      });
+      // successResponse(res, {...donation}, 201);
+    } else {
+      const donationInfo = {
+        amount,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        amountToBeRepaid: amountRepay,
+        type: campaign.fundingType,
+        amountToBeRepaidPerTime: amountPerTime,
+        amountAlreadyRepaid: amountAlreadyRaise,
+        firstPaymentDate: campaign.firstPaymentDate,
+        lastPaymentDate: campaign.endDatePledgedProfit,
+        campaignName: campaign.campaignName,
+        ownerLogo: campaign.ownerLogo,
+        investorBrief: campaign.investorBrief,
+        campaignId,
+        recipientId: recipient.id,
+        userId,
+      };
+      const payoutInfo = {
+        amount: amountPerTime,
+        firstName: campaignOwner.firstName,
+        lastName: campaignOwner.lastName,
+        businessName: campaignBusiness.businessName,
+        amountToBeRepaid: amountRepay,
+        type: campaign.fundingType,
+        amountToBeRepaidPerTime: amountPerTime,
+        amountAlreadyRepaid: amountAlreadyRaise,
+        firstPaymentDate: campaign.firstPaymentDate,
+        lastPaymentDate: campaign.endDatePledgedProfit,
+        campaignName: campaign.campaignName,
+        ownerLogo: campaign.ownerLogo,
+        investorBrief: campaign.investorBrief,
+        campaignId,
+        recipientId: userId,
+        userId,
+      };
+      // check if customer exist in our database
+      // const recipient = await findUserBy({email: customer.email});
+      // check if user have a wallet, else create wallet
+      await validateUserWallet(recipient.id);
+      // create wallet transaction
+      const walletTransaction = await createWalletTransaction(recipient.id, status, currency, amount);
+      // create transaction
+      await createTransaction(recipient.id, id, status, currency, amount, customer);
+      await updateWallet(recipient.id, amount);
+      const donation = await createDonation(donationInfo);
+      let counter = 1;
+      const payoutDelay = campaign.endDate - new Date().getTime();
+
+      const newPayout = async ()=> {
+        const reference = v4();
+        const summary = 'Loan Repayment';
+        // check if owner has a wallet, else create wallet
+        await validateUserWallet(userId);
+        await Promise.all([
+          debitRepaymentAccount(
+              {amountPerTime, userId: recipient.id, purpose: 'Repayment to investor', reference, summary,
+                trnxSummary: `TRFR TO: ${userId}. TRNX REF:${reference} `}),
+          creditRepaymentAccount(
+              {amountPerTime, userId: userId, purpose: `Return on investment in ${campaign.campaignName}`, reference, summary,
+                trnxSummary: `TRFR FROM: ${recipient.id}. TRNX REF:${reference} `}),
+        ]);
+        createPayout(payoutInfo);
+        console.log('Payout number ' +counter);
+        if (counter < numberOfRepayments) {
+          counter++;
+          setTimeout(newPayout, campaign.timePerPayment);
+        }
+      };
+
+      const triggerPayout = () => setTimeout( newPayout
+          , payoutDelay);
+      await triggerPayout();
+      return res.status(200).json({
+        success: true,
+        donation,
+        walletTransaction,
+      });
+    }
+  } catch (error) {
+    errorResponse(res, {
+      code: error.statusCode,
+      message: error.message,
+    });
+  }
+};
+
+/**
+           * Creates a new Donation from Payment portal.
+           *
+           * @param {Request} req The request from the endpoint.
+           * @param {Response} res TheyId response returned by the method.
+           * @memberof DonationController
+           * @return {JSON} A JSON response with the created Donation's
+           *  details.
+           */
+export const addDonationCallbackFlutter = async (req, res) => {
   try {
     const {transaction_id} = req.query;
     // URL with transaction ID of which will be used to confirm
@@ -929,11 +1433,11 @@ const createWalletTransaction =
      const wallet = await findWalletBy({userId});
      // create wallet transaction
      const walletTransaction = await addWalletTransaction({
-       amount,
+       amount: Number(amount)/100,
        userId,
        isInflow: true,
        balanceBefore: Number(wallet.balance),
-       balanceAfter: Number(wallet.balance) + Number(amount),
+       balanceAfter: Number(wallet.balance) + Number(amount)/100,
        currency,
        status,
      });
@@ -986,10 +1490,10 @@ const createTransaction = async (
       name: customer.name,
       email: customer.email,
       phone: customer.phone_number,
-      amount,
+      amount: Number(amount)/100,
       currency,
       balanceBefore: Number(wallet.balance),
-      balanceAfter: Number(wallet.balance) + Number(amount),
+      balanceAfter: Number(wallet.balance) + Number(amount)/100,
       paymentStatus: status,
       paymentGateway: 'flutterwave',
     });

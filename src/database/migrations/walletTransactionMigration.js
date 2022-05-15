@@ -8,7 +8,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       amount: {
-        type: Sequelize.DOUBLE,
+        type: Sequelize.FLOAT,
         allowNull: false,
         defaultValue: 0,
       },
@@ -22,7 +22,7 @@ module.exports = {
       paymentMethod: {
         type: Sequelize.STRING,
         allowNull: false,
-        defaultValue: 'flutterwave',
+        defaultValue: 'paystack',
       },
       balanceBefore: {
         type: Sequelize.DOUBLE,
@@ -38,9 +38,8 @@ module.exports = {
         values: ['NGN', 'USD', 'EUR', 'GBP'],
       },
       status: {
-        type: Sequelize.ENUM,
+        type: Sequelize.STRING,
         allowNull: false,
-        values: ['successful', 'pending', 'failed'],
       },
       createdAt: {
         allowNull: false,

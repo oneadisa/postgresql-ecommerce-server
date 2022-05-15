@@ -30,6 +30,7 @@ module.exports = {
       amount: {
         type: Sequelize.FLOAT,
         allowNull: false,
+        defaultValue: 0,
       },
       currency: {
         type: Sequelize.ENUM,
@@ -38,15 +39,15 @@ module.exports = {
       },
       paymentStatus: {
         type: Sequelize.STRING,
-        values: ['successful', 'pending', 'failed'],
+        // values: ['successful', 'pending', 'failed'],
         allowNull: false,
         defaultValue: 'pending',
       },
       // Payment gateway may differ as the application grows
       paymentGateway: {
-        type: Sequelize.ENUM,
+        type: Sequelize.STRING,
         allowNull: false,
-        values: ['flutterwave'],
+        defaultValue: 'paystack',
       },
       balanceBefore: {
         type: Sequelize.DOUBLE,

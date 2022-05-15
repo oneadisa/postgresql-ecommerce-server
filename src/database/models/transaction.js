@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     amount: {
       type: DataTypes.FLOAT,
       allowNull: false,
+      defaultValue: 0,
     },
     currency: {
       type: DataTypes.ENUM,
@@ -31,15 +32,15 @@ module.exports = (sequelize, DataTypes) => {
     },
     paymentStatus: {
       type: DataTypes.STRING,
-      values: ['successful', 'pending', 'failed'],
+      // values: ['successful', 'pending', 'failed'],
       allowNull: false,
       defaultValue: 'pending',
     },
     // Payment gateway may differ as the application grows
     paymentGateway: {
-      type: DataTypes.ENUM,
+      type: DataTypes.STRING,
       allowNull: false,
-      values: ['flutterwave'],
+      defaultValue: 'paystack',
     },
     balanceBefore: {
       type: DataTypes.DOUBLE,

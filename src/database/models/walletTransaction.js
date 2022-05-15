@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const WalletTransaction = sequelize.define('WalletTransaction', {
     amount: {
-      type: DataTypes.DOUBLE,
+      type: DataTypes.FLOAT,
       allowNull: false,
       defaultValue: 0,
     },
@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     paymentMethod: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'flutterwave',
+      defaultValue: 'paystack',
     },
     balanceBefore: {
       type: DataTypes.DOUBLE,
@@ -31,9 +31,9 @@ module.exports = (sequelize, DataTypes) => {
       values: ['NGN', 'USD', 'EUR', 'GBP'],
     },
     status: {
-      type: DataTypes.ENUM,
+      type: DataTypes.STRING,
       allowNull: false,
-      values: ['successful', 'pending', 'failed'],
+      // values: ['successful', 'pending', 'failed'],
     },
 
   });

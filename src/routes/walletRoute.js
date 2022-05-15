@@ -2,6 +2,9 @@ import {Router as expressRouter} from 'express';
 import {fund, getFundResponse, walletBalance,
   getMyWalletDetails, addWallet, transfer,
   // getWithdrawResponse,
+  getFundResponsePaystack,
+  webhook,
+  withdrawFlutter,
   withdraw, fw,
 } from '../controllers';
 // import {protect} from '../middlewares';
@@ -9,12 +12,15 @@ import {fund, getFundResponse, walletBalance,
 
 const router = expressRouter();
 
+router.post('/my/webhook/url', webhook);
 router
     .route('/fund')
-    .get(fund);
+    .post(fund);
 router.post('/withdraw', withdraw);
+router.post('/withdraw/flutter', withdrawFlutter);
 router.get('/one/:userId/balance', walletBalance);
-router.get('/fund/response', getFundResponse);
+router.get('/fund/response', getFundResponsePaystack);
+router.get('/fund/response/one', getFundResponse);
 router.get('/fw', fw);
 // router.post('/withdraw/response', getWithdrawResponse);
 router.get('/me/:userId', getMyWalletDetails);

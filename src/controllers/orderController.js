@@ -21,7 +21,7 @@ import {Op} from 'sequelize';
 const {creditAccount, debitAccount} = require( '../utils/transfer');
 const {v4} = require('uuid');
 // const {Op} = require('sequelize');
-const path = require('path');
+// const path = require('path');
 import axios from 'axios';
 
 /**
@@ -33,17 +33,331 @@ import axios from 'axios';
  * @return {JSON} A JSON response with the registered
  *  wallet's details and a JWT.
  */
+// export const addCashOrder = async (req, res) => {
+//   try {
+//     return res.sendFile(path.join(__dirname + '../../../flutterOrder.html'));
+//     // __dirname : It will resolve to your project folder.
+//   } catch (err) {
+//     errorResponse(res, {
+//       message: err.message,
+//     });
+//   }
+// };
+
+/**
+ * Creates a new Order.
+ *
+ * @param {Request} req The request from the endpoint.
+ * @param {Response} res The response returned by the method.
+ * @memberof OrderController
+ * @return {JSON} A JSON response with the created Order's
+ *  details.
+ */
 export const addCashOrder = async (req, res) => {
   try {
-    return res.sendFile(path.join(__dirname + '../../../flutterOrder.html'));
-    // __dirname : It will resolve to your project folder.
-  } catch (err) {
+    const {
+      amount,
+      userId,
+    } = req.body;
+
+    const user = await findUserBy({id: userId});
+    console.log(user);
+    const fundData = JSON.stringify({
+      'amount': amount,
+      'email': user.email,
+      'reference': Date.now(),
+      'currency': 'NGN',
+      'callback_url': 'http://localhost:8080/api/wallet/fund/response',
+      'metadata': {
+        'consumer_id': user.id,
+        'customer': {
+          'email': user.email,
+          'phone': user.phoneNumber,
+          'name': user.firstName + ' ' + user.lastName,
+        },
+        'cartItems': JSON.stringify(
+            [
+              {
+                productId: 4,
+                name: 'know how',
+                price: 7500,
+                image: 'images.data[0].url.jpg',
+                stock: 12,
+                description: 'brief desc.',
+                deliveryPrice: 200,
+                quantity: 2,
+              },
+              {
+                productId: 2,
+                name: 'name name',
+                price: 2300,
+                image: 'images.data[0].url.jpg',
+                stock: 2,
+                description: 'data.product.shortDescription',
+                deliveryPrice: 'store.store.deliveryPrice',
+                quantity: 3,
+              },
+            ]),
+        'userId': 1,
+        'address': 'shippingInfo address',
+        'city': 'shippingInfo city',
+        'state': 'shippingInfo state',
+        'country': 'shippingInfo country',
+        'pinCode': 2222,
+        'phoneNumber': 123456789,
+      },
+    });
+    console.log(fundData);
+    const config = {
+      method: 'post',
+      url: 'https://api.paystack.co/transaction/initialize',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+      data: fundData,
+    };
+
+    const initialise = await axios(config);
+    console.log(initialise);
+
+    const verify = {
+      method: 'get',
+      url: `https://api.paystack.co/transaction/verify/${initialise.data.data.reference}`,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+    };
+    const finalise = await axios(verify);
+    console.log(finalise);
+
+    const {currency, id, status} = finalise.data.data;
+    // const { customer } = finalise.data.data.metadata;
+    // check if transaction id already exist
+    const {cartItems, address, city, state, country,
+      pinCode, phoneNumber} = finalise.data.data.metadata;
+    // check if transaction id already exist
+    const transactionExist = await findTransactionBy({transactionId: id});
+    if (transactionExist) {
+      return res.status(409).
+          send('Sorry, This Transaction Already Exists.');
+    }
+
+    const cartItemsArray = JSON.parse(cartItems);
+    console.log(cartItemsArray);
+
+    for (let i = 0; i < cartItemsArray.length; i++) {
+      const user = await findUserBy({id: userId});
+      const orderBusiness = await findBusinessBy({userId: user.id});
+      const product = await findProductBy({id: cartItemsArray[i].productId});
+      const store = await findStoreBy({id: product.storeId});
+      const owner = await findUserBy({id: product.userId});
+      const business = await findBusinessBy({userId: owner.id});
+      const itemsPrice = cartItemsArray[i].price * cartItemsArray[i].quantity;
+      const deliveryPrice = product.deliveryPrice;
+      const taxPrice = 0.02651699 * (itemsPrice + deliveryPrice);
+      const vendorsPay = itemsPrice + deliveryPrice;
+      const totalPrice = itemsPrice + deliveryPrice + taxPrice;
+      if (userId) {
+        if (orderBusiness) {
+          const orderInfo = {
+            address,
+            city,
+            state,
+            country,
+            pinCode,
+            phoneNumber,
+            email: user.email,
+            productName: product.productTitle,
+            price: product.price,
+            quantity: cartItemsArray[i].quantity,
+            image: cartItemsArray[i].image,
+            paymentInfoId: id,
+            paymentInfoStatus: status,
+            paidAt: Date.now(),
+            itemsPrice,
+            taxPrice,
+            deliveryPrice,
+            vendorsPay,
+            totalPrice,
+            orderStatus: 'Processing',
+            // deliveredAt,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            businessName: orderBusiness.businessName,
+            userId,
+            productId: product.id,
+            ownerId: owner.id,
+            owner: owner.firstName + ' ' + owner.lastName,
+            store: store.storeName,
+            business: business.businessName,
+          };
+          // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+          // orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+          // orderInfo.deliveryPrice;
+          // check if customer exist in our database
+          // const owner = await findUserBy({email: customer.email});
+          // check if user have a wallet, else create wallet
+          await validateUserWallet(owner.id);
+          // create wallet transaction
+          await createWalletTransaction(owner.id, status, currency, vendorsPay);
+          // create transaction
+          await createTransaction(owner.id, id,
+              status, currency, vendorsPay, owner);
+          await updateWallet(owner.id, vendorsPay);
+          await createOrder(orderInfo);
+          // successResponse(res, {...order}, 201);
+          // return res.status(200).json({
+          // success: true,
+          // order,
+          // walletTransaction,
+          // transaction,
+          // });
+        } else {
+          const orderInfo = {
+            address,
+            city,
+            state,
+            country,
+            pinCode,
+            phoneNumber,
+            email: user.email,
+            productName: product.productTitle,
+            price: product.price,
+            quantity,
+            image,
+            paymentInfoId: id,
+            paymentInfoStatus: status,
+            paidAt: Date.now(),
+            itemsPrice,
+            taxPrice,
+            deliveryPrice: product.deliveryPrice,
+            vendorsPay,
+            totalPrice,
+            orderStatus: 'Processing',
+            // deliveredAt,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            userId,
+            productId: product.id,
+            ownerId: owner.id,
+            owner: owner.firstName + ' ' + owner.lastName,
+            store: store.storeName,
+            business: business.businessName,
+          };
+          // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+          orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+            orderInfo.deliveryPrice;
+          // check if customer exist in our database
+          // const owner = await findUserBy({email: customer.email});
+          // check if user have a wallet, else create wallet
+          await validateUserWallet(owner.id);
+          // create wallet transaction
+          await createWalletTransaction(owner.id, status, currency, vendorsPay);
+          // create transaction
+          await createTransaction(owner.id, id,
+              status, currency, vendorsPay, owner);
+          await updateWallet(owner.id, vendorsPay);
+          await createOrder(orderInfo);
+          // successResponse(res, {...order}, 201);
+          // return res.status(200).json({
+          // success: true,
+          // order,
+          // walletTransaction,
+          // transaction,
+          // });
+        }
+      } else {
+        // const user = await findUserBy({id: userId});
+        // const orderBusiness = await findBusinessBy({userId: user.id});
+        const product = await findProductBy({id: cartItemsArray[i].productId});
+        const store = await findStoreBy({id: product.storeId});
+        const owner = await findUserBy({id: product.userId});
+        const business = await findBusinessBy({userId: owner.id});
+        const itemsPrice = cartItemsArray[i].price * cartItemsArray[i].quantity;
+        const deliveryPrice = product.deliveryPrice;
+        const taxPrice = 0.02651699 * (itemsPrice + deliveryPrice);
+        const vendorsPay = itemsPrice + deliveryPrice;
+        const totalPrice = itemsPrice + deliveryPrice + taxPrice;
+        const orderInfo = {
+          address,
+          city,
+          state,
+          country,
+          pinCode,
+          phoneNumber,
+          productName: product.productTitle,
+          price: product.price,
+          quantity,
+          image,
+          paymentInfoId: id,
+          paymentInfoStatus: status,
+          paidAt: Date.now(),
+          itemsPrice,
+          taxPrice,
+          deliveryPrice: product.deliveryPrice,
+          vendorsPay,
+          totalPrice,
+          orderStatus: 'Processing',
+          // deliveredAt,
+          firstName,
+          lastName,
+          businessName,
+          userId,
+          productId: product.id,
+          ownerId: owner.id,
+          owner: owner.firstName + ' ' + owner.lastName,
+          store: store.storeName,
+          business: business.businessName,
+        };
+        // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+        orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+          orderInfo.deliveryPrice;
+        // check if customer exist in our database
+        // const owner = await findUserBy({email: customer.email});
+        // check if user have a wallet, else create wallet
+        await validateUserWallet(owner.id);
+        // create wallet transaction
+        await createWalletTransaction(owner.id, status, currency, vendorsPay);
+        // create transaction
+        createTransaction(owner.id, id,
+            status, currency, vendorsPay, owner);
+        await updateWallet(owner.id, vendorsPay);
+        await createOrder(orderInfo);
+        // successResponse(res, {...order}, 201);
+        // return res.status(200).json({
+        // success: true,
+        // order,
+        // walletTransaction,
+        // transaction,
+        // });
+      }
+    }
+
+    const {count, rows} = await
+    findOrdersAndCountBy({userId});
+    // req.body.images = imagesLinks;
+    // req.body.user = req.user.id;
+    // const product = await Product.create(req.body);
+    // successResponse(res, {...product}, 201);
+    return res.status(200).json({
+      success: true,
+      // result,
+      orders: {
+        count,
+        rows,
+      },
+    });
+  } catch (error) {
     errorResponse(res, {
-      message: err.message,
+      code: error.statusCode,
+      message: error.message,
     });
   }
 };
-
 
 /**
  * Creates a new Order.
@@ -55,6 +369,257 @@ export const addCashOrder = async (req, res) => {
  *  details.
  */
 export const addCashOrderCallback = async (req, res) => {
+  try {
+    const {reference} = req.query;
+    // URL with transaction ID of which will be used to confirm
+    //  transaction status
+    console.log(reference);
+    const url = `https://api.paystack.co/transaction/verify/${reference}`;
+    // Network call to confirm transaction status
+    const response = await axios({
+      url,
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYSTACK_PRIVATE_KEY}`,
+      },
+    });
+    console.log(response.data);
+    const {currency, id} = response.data.data;
+    const {status} = response.data.data;
+    const {cartItems, userId, address, city, state, country,
+      pinCode, phoneNumber} = response.data.data.metadata;
+    // check if transaction id already exist
+    const transactionExist = await findTransactionBy({transactionId: id});
+    if (transactionExist) {
+      return res.status(409).
+          send('Sorry, This Transaction Already Exists.');
+    }
+
+    const cartItemsArray = JSON.parse(cartItems);
+    console.log(cartItemsArray);
+
+    for (let i = 0; i < cartItemsArray.length; i++) {
+      const user = await findUserBy({id: userId});
+      const orderBusiness = await findBusinessBy({userId: user.id});
+      const product = await findProductBy({id: cartItemsArray[i].productId});
+      const store = await findStoreBy({id: product.storeId});
+      const owner = await findUserBy({id: product.userId});
+      const business = await findBusinessBy({userId: owner.id});
+      const itemsPrice = cartItemsArray[i].price * cartItemsArray[i].quantity;
+      const deliveryPrice = product.deliveryPrice;
+      const taxPrice = 0.02651699 * (itemsPrice + deliveryPrice);
+      const vendorsPay = itemsPrice + deliveryPrice;
+      const totalPrice = itemsPrice + deliveryPrice + taxPrice;
+      if (userId) {
+        if (orderBusiness) {
+          const orderInfo = {
+            address,
+            city,
+            state,
+            country,
+            pinCode,
+            phoneNumber,
+            email: user.email,
+            productName: product.productTitle,
+            price: product.price,
+            quantity: cartItemsArray[i].quantity,
+            image: cartItemsArray[i].image,
+            paymentInfoId: id,
+            paymentInfoStatus: status,
+            paidAt: Date.now(),
+            itemsPrice,
+            taxPrice,
+            deliveryPrice,
+            vendorsPay,
+            totalPrice,
+            orderStatus: 'Processing',
+            // deliveredAt,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            businessName: orderBusiness.businessName,
+            userId,
+            productId: product.id,
+            ownerId: owner.id,
+            owner: owner.firstName + ' ' + owner.lastName,
+            store: store.storeName,
+            business: business.businessName,
+          };
+          // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+          // orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+          // orderInfo.deliveryPrice;
+          // check if customer exist in our database
+          // const owner = await findUserBy({email: customer.email});
+          // check if user have a wallet, else create wallet
+          await validateUserWallet(owner.id);
+          // create wallet transaction
+          await createWalletTransaction(owner.id, status, currency, vendorsPay);
+          // create transaction
+          await createTransaction(owner.id, id,
+              status, currency, vendorsPay, owner);
+          await updateWallet(owner.id, vendorsPay);
+          await createOrder(orderInfo);
+          // successResponse(res, {...order}, 201);
+          // return res.status(200).json({
+          // success: true,
+          // order,
+          // walletTransaction,
+          // transaction,
+          // });
+        } else {
+          const orderInfo = {
+            address,
+            city,
+            state,
+            country,
+            pinCode,
+            phoneNumber,
+            email: user.email,
+            productName: product.productTitle,
+            price: product.price,
+            quantity,
+            image,
+            paymentInfoId: id,
+            paymentInfoStatus: status,
+            paidAt: Date.now(),
+            itemsPrice,
+            taxPrice,
+            deliveryPrice: product.deliveryPrice,
+            vendorsPay,
+            totalPrice,
+            orderStatus: 'Processing',
+            // deliveredAt,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            userId,
+            productId: product.id,
+            ownerId: owner.id,
+            owner: owner.firstName + ' ' + owner.lastName,
+            store: store.storeName,
+            business: business.businessName,
+          };
+          // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+          orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+            orderInfo.deliveryPrice;
+          // check if customer exist in our database
+          // const owner = await findUserBy({email: customer.email});
+          // check if user have a wallet, else create wallet
+          await validateUserWallet(owner.id);
+          // create wallet transaction
+          await createWalletTransaction(owner.id, status, currency, vendorsPay);
+          // create transaction
+          await createTransaction(owner.id, id,
+              status, currency, vendorsPay, owner);
+          await updateWallet(owner.id, vendorsPay);
+          await createOrder(orderInfo);
+          // successResponse(res, {...order}, 201);
+          // return res.status(200).json({
+          // success: true,
+          // order,
+          // walletTransaction,
+          // transaction,
+          // });
+        }
+      } else {
+        // const user = await findUserBy({id: userId});
+        // const orderBusiness = await findBusinessBy({userId: user.id});
+        const product = await findProductBy({id: cartItemsArray[i].productId});
+        const store = await findStoreBy({id: product.storeId});
+        const owner = await findUserBy({id: product.userId});
+        const business = await findBusinessBy({userId: owner.id});
+        const itemsPrice = cartItemsArray[i].price * cartItemsArray[i].quantity;
+        const deliveryPrice = product.deliveryPrice;
+        const taxPrice = 0.02651699 * (itemsPrice + deliveryPrice);
+        const vendorsPay = itemsPrice + deliveryPrice;
+        const totalPrice = itemsPrice + deliveryPrice + taxPrice;
+        const orderInfo = {
+          address,
+          city,
+          state,
+          country,
+          pinCode,
+          phoneNumber,
+          productName: product.productTitle,
+          price: product.price,
+          quantity,
+          image,
+          paymentInfoId: id,
+          paymentInfoStatus: status,
+          paidAt: Date.now(),
+          itemsPrice,
+          taxPrice,
+          deliveryPrice: product.deliveryPrice,
+          vendorsPay,
+          totalPrice,
+          orderStatus: 'Processing',
+          // deliveredAt,
+          firstName,
+          lastName,
+          businessName,
+          userId,
+          productId: product.id,
+          ownerId: owner.id,
+          owner: owner.firstName + ' ' + owner.lastName,
+          store: store.storeName,
+          business: business.businessName,
+        };
+        // orderInfo.itemsPrice = orderInfo.price * orderInfo.quantity;
+        orderInfo.totalPrice = orderInfo.itemsPrice + orderInfo.taxPrice +
+          orderInfo.deliveryPrice;
+        // check if customer exist in our database
+        // const owner = await findUserBy({email: customer.email});
+        // check if user have a wallet, else create wallet
+        await validateUserWallet(owner.id);
+        // create wallet transaction
+        await createWalletTransaction(owner.id, status, currency, vendorsPay);
+        // create transaction
+        createTransaction(owner.id, id,
+            status, currency, vendorsPay, owner);
+        await updateWallet(owner.id, vendorsPay);
+        await createOrder(orderInfo);
+        // successResponse(res, {...order}, 201);
+        // return res.status(200).json({
+        // success: true,
+        // order,
+        // walletTransaction,
+        // transaction,
+        // });
+      }
+    }
+
+    const {count, rows} = await
+    findOrdersAndCountBy({userId});
+    // req.body.images = imagesLinks;
+    // req.body.user = req.user.id;
+    // const product = await Product.create(req.body);
+    // successResponse(res, {...product}, 201);
+    return res.status(200).json({
+      success: true,
+      // result,
+      orders: {
+        count,
+        rows,
+      },
+    });
+  } catch (error) {
+    errorResponse(res, {
+      code: error.statusCode,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Creates a new Order.
+ *
+ * @param {Request} req The request from the endpoint.
+ * @param {Response} res The response returned by the method.
+ * @memberof OrderController
+ * @return {JSON} A JSON response with the created Order's
+ *  details.
+ */
+export const addCashOrderCallbackFlutter = async (req, res) => {
   try {
     const {transaction_id} = req.query;
     // URL with transaction ID of which will be used to confirm

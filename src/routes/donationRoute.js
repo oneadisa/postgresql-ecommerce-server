@@ -6,7 +6,7 @@ import {
   getDonationDetails, getAllDonations, getMyDonationRecievedSum,
   getMyDebtSum, getDonationRecievedSumUser, getDebtSumUser,
   getDonationDetailsUser, getDonationRecievedDetailsUser,
-  getMyDonationsCampaign,
+  getMyDonationsCampaign, addDonationCallback,
   getDonationsCampaign, getDonationsSumCampaign, getDebtCampaign}
   from '../controllers';
 import {protect, onDonationCreation} from '../middlewares';
@@ -19,6 +19,7 @@ router.route('/all').get(getAllDonations);
 router
     .route('/wallet/create')
     .post(onDonationCreation, addDonationWallet);
+router.get('/create/callback', addDonationCallback);
 router.get('/cash/create', addDonationCash);
 router.get('/me', protect, getMyDonationDetails);
 router.get('/me/donated', protect, getDonationSumUser);
