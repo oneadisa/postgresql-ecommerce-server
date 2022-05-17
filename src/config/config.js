@@ -1,4 +1,5 @@
-import dotenv from 'dotenv';
+const dotenv = require('dotenv');
+require('dotenv').config();
 dotenv.config({path: `.env.${process.env.NODE_ENV}`});
 
 module.exports = {
@@ -19,6 +20,7 @@ module.exports = {
     dialect: 'postgres',
   },
   production: {
+    uri: process.env.DATABASE_URL,
     username: process.env.PRO_USERNAME,
     password: process.env.PRO_PASSWORD,
     database: process.env.PRO_DATABASE,

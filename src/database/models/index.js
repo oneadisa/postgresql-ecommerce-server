@@ -1,26 +1,43 @@
 const fs = require('fs');
+require('dotenv').config();
 const path = require('path');
 const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
+const env = process.env.NODE_ENV;
 const config = require(__dirname + '/../../config/config.js')[env];
 const db = {};
 
-// let sequelize;
-// if (config.use_env_variable) {
-// sequelize = new Sequelize(process.env[config.use_env_variable], config);
-// } else {
-// const sequelize =
-// new Sequelize(config.database, config.username, config.password, config);
-// }
-
 let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+if (env === 'development') {
+  sequelize = new Sequelize(
+      config.database,
+      config.username,
+      config.password,
+      config,
+  );
 } else {
-  sequelize =
-new Sequelize(config.database, config.username, config.password, config);
+  sequelize = new Sequelize(
+      config.uri,
+      {
+        dialect: config.dialect,
+        dialectOptions: {
+          ssl: {
+            require: true,
+            rejectUnauthorized: false,
+          },
+        },
+      });
 }
+console.log(config);
+
+sequelize
+    .authenticate()
+    .then(() => {
+      console.log('Connection has been established successfully.');
+    })
+    .catch((err) => {
+      console.error('Unable to connect to the database:', err);
+    });
 
 fs
     .readdirSync(__dirname)

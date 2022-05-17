@@ -7,7 +7,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import errorhandler from 'errorhandler';
 
-import routes from './src/routes';
+import routes from './routes';
 
 const app = express();
 
