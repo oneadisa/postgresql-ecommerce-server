@@ -8,7 +8,7 @@ const config = require(__dirname + '/../../config/config.js')[env];
 const db = {};
 
 let sequelize;
-if (env === 'development') {
+if (env === 'development' || 'test') {
   sequelize = new Sequelize(
       config.database,
       config.username,
@@ -29,6 +29,8 @@ if (env === 'development') {
       });
 }
 console.log(config);
+// eslint-disable-next-line max-len
+console.log(`The current environment is a ${process.env.NODE_ENV} environment.`);
 
 sequelize
     .authenticate()
