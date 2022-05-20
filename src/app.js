@@ -14,7 +14,7 @@ const app = express();
 const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(morgan('dev'));
-// app.use(cors());
+app.use(cors());
 //     {
 //       origin: '*',
 //       origin: ['https://www.gaged.io', 'http://localhost:3000/'],
@@ -42,12 +42,6 @@ if (!isProduction) {
   app.use(errorhandler());
 };
 
-app.use(
-    cors({
-      origin: '*',
-      methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
-    }),
-);
 app.use('/api', routes);
 
 // Catch 404 and forward to error handler
