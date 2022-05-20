@@ -14,13 +14,13 @@ const app = express();
 const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(morgan('dev'));
-app.use(cors());
-// {
-// origin: '*',
-//   origin: ['https://www.gaged.io', 'http://localhost:3000/'],
-//   methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
-// },
-
+app.use(cors(
+    {
+      origin: '*',
+      // origin: ['https://www.gaged.io', 'http://localhost:3000/'],
+      methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
+    },
+));
 // app.use((req, res, next) => {
 //   res.header('Access-Control-Allow-Origin', '*');
 //   next();
