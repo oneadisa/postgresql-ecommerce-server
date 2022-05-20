@@ -201,9 +201,9 @@ export const loginUser= async (req, res) =>{
     const loginResponse = extractUserData(user);
     const {token} = loginResponse;
     res.cookie('token', token, {maxAge: 86400000, httpOnly: true});
-    successResponse(res, {...loginResponse});
+    return successResponse(res, {...loginResponse});
   } catch (error) {
-    errorResponse(res, {code: error.status, message: error.message});
+    return errorResponse(res, {code: error.status, message: error.message});
   }
 };
 /**

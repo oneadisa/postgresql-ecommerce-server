@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
 require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
-// import cors from 'cors';
+import cors from 'cors';
 import morgan from 'morgan';
 import errorhandler from 'errorhandler';
 
@@ -14,7 +14,7 @@ const app = express();
 const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(morgan('dev'));
-// app.use(cors(
+app.use(cors());
 //     {
 //       origin: '*',
 //       origin: ['https://www.gaged.io', 'http://localhost:3000/'],
@@ -26,13 +26,13 @@ app.use(morgan('dev'));
 //   next();
 // });
 
-app.use(function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', 'https://www.gaged.io');
-  // update to match the domain you will make the request from
-  res.header('Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+// app.use(function(req, res, next) {
+//   res.header('Access-Control-Allow-Origin', 'https://www.gaged.io');
+//   // update to match the domain you will make the request from
+//   res.header('Access-Control-Allow-Headers',
+//       'Origin, X-Requested-With, Content-Type, Accept');
+//   next();
+// });
 
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({extended: true}));

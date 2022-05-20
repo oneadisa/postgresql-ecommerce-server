@@ -101,10 +101,11 @@ peep2.innerSayHello();
  * @param {object} data The payload.
  * @param {number} code HTTP Status code.
  * @memberof Helpers
- * @return {Response} A JSON success response.
+//  * @return {Response} A JSON success response.
 */
 export const successResponse = (res, data, code = 200) => {
-  return res.status(code).json({
+  res.header('Access-Control-Allow-Origin', '*');
+  res.status(code).json({
     status: 'success',
     data,
   });
@@ -118,13 +119,17 @@ export const successResponse = (res, data, code = 200) => {
  * @param {string} options.message Error message.
  * @param {object} options.errors A collection of  error message.
  * @memberof Helpers
- * @return {Response} A JSON failure response.
+//  * @return {Response} A JSON failure response.
 */
 export const errorResponse = (res,
     {code = 500,
       message = 'Some error occurred while processing your Request',
       errors}) => {
-  return res.status(code).json({
+  res.header('Access-Control-Allow-Origin', '*',
+      // 'Access-Control-Allow-Methods', '*',
+      // 'Access-Control-Allow-Headers', '*'
+  );
+  res.status(code).json({
     status: 'fail',
     error: {
       message,
