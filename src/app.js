@@ -60,6 +60,16 @@ if (!isProduction) {
 
 app.use('/api', routes);
 
+// GET method route
+app.get('/', (req, res) => {
+  res.send({
+    msg: 'Hello from Gaged server',
+    Time: new Date(),
+    status: 'running',
+    server: 'Express + Babel JS Server',
+  });
+});
+
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
   const err = new Error('Not Found');
@@ -67,14 +77,6 @@ app.use((req, res, next) => {
   next(err);
 });
 
-app.get('/', (req, res) => {
-  return res.send({
-    msg: 'Hello Gaged server',
-    Time: new Date(),
-    status: 'running',
-    server: 'Express + Babel JS Server',
-  });
-});
 
 // / error handlers
 
