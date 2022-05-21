@@ -11,25 +11,25 @@ import errorhandler from 'errorhandler';
 import routes from './routes';
 
 const app = express();
-
+// const router = expressRouter();
 const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(morgan('dev'));
 
-// app.use(cors());
+app.use(cors());
 
-const corsConfig = (app) => {
-  app.use(
-      cors({
-        origin: '*',
-        methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
-      }),
-  );
-};
+// const corsConfig = (app) => {
+//   app.use(
+//       cors({
+//         origin: '*',
+//         methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
+//       }),
+//   );
+// };
 
 
 // Enable CORS with various options
-corsConfig(app);
+// corsConfig(app);
 
 //     {
 //       origin: '*',
@@ -67,7 +67,7 @@ app.use((req, res, next) => {
   next(err);
 });
 
-app.get('/', (_, res) => {
+app.get('/', (req, res) => {
   return res.send({
     msg: 'Hello Gaged server',
     Time: new Date(),
