@@ -6,6 +6,7 @@ const cloudinary = require('cloudinary').v2;
 import cors from 'cors';
 import morgan from 'morgan';
 import errorhandler from 'errorhandler';
+// import {Application} from 'express';
 
 import routes from './routes';
 
@@ -14,7 +15,22 @@ const app = express();
 const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(morgan('dev'));
-app.use(cors());
+
+// app.use(cors());
+
+const corsConfig = (app) => {
+  app.use(
+      cors({
+        origin: '*',
+        methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
+      }),
+  );
+};
+
+
+// Enable CORS with various options
+corsConfig(app);
+
 //     {
 //       origin: '*',
 //       origin: ['https://www.gaged.io', 'http://localhost:3000/'],
